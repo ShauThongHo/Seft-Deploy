@@ -8,7 +8,7 @@ import threading
 def send_heartbeat():
     while True:
         st.session_state['heartbeat'] = time.time()
-        time.sleep(10)  # 每10秒发送一次心跳
+        time.sleep(4*24*60*60)  # 每10秒发送一次心跳
 
 # 启动一个线程来运行心跳函数
 if 'heartbeat_thread' not in st.session_state:
