@@ -103,5 +103,5 @@ if st.button("Download"):
         st.error("Please enter a valid YouTube URL.")
 
 # Quit button
-if st.button("Quit", on_click=clear_input):
+if st.button("Clear", on_click=clear_input):
     st.stop()
