@@ -80,7 +80,7 @@ if st.button("Download"):
     if url:
         file_path = download_youtube_video_or_audio(url, choice)
         if file_path and os.path.exists(file_path):
-            st.success(f"Download complete: {file_path}")
+            st.success(f"Download avaiable: {file_path}")
             with open(file_path, "rb") as file:
                 btn = st.download_button(
                     label="Download File",
