@@ -19,7 +19,7 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'webm',  # Change the codec to webm for initial download
+                'preferredcodec': 'mp3',  # Change the codec to mp3
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
