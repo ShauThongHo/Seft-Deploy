@@ -1,6 +1,5 @@
 import streamlit as st
 import yt_dlp
-from tqdm import tqdm
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -26,20 +25,15 @@ def download_youtube_video_or_audio(url, choice):
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
         return
     
-    # Initialize the progress bar
-    global pbar
-    pbar = tqdm(total=100, unit='B', unit_scale=True, desc='Downloading')
-    
     # Download the video or audio using yt-dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 def my_hook(d):
     if d['status'] == 'downloading':
-        pbar.update(d['downloaded_bytes'] - pbar.n)
-        st.progress(int(d['_percent_str'].strip('%')))
+        st.session_state.progress_bar.progress(int(d['_percent_str'].strip('%')))
     elif d['status'] == 'finished':
-        pbar.close()
+        st.session_state.progress_bar.empty()
         st.success('Download complete, now converting ...')
 
 # Streamlit app
@@ -50,6 +44,10 @@ url = st.text_input("Enter the YouTube URL:")
 
 # Select download type
 choice = st.selectbox("Do you want to download video or audio?", ('Video', 'Audio'))
+
+# Initialize the progress bar in session state
+if 'progress_bar' not in st.session_state:
+    st.session_state.progress_bar = st.empty()
 
 # Download button
 if st.button("Download"):
