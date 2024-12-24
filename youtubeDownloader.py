@@ -18,11 +18,11 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
+                'preferredcodec': 'mp3',  # Change the codec to mp3
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
-            'keepvideo': True,  # Keep the original video file
+            'keepvideo': False,  # Do not keep the original video file
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
