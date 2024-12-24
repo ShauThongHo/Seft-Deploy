@@ -1,20 +1,6 @@
 import streamlit as st
 import yt_dlp
 import os
-import time
-import threading
-
-# 定义一个函数来发送心跳信号
-def send_heartbeat():
-    while True:
-        st.session_state['heartbeat'] = time.time()
-        time.sleep(4 * 24 * 60 * 60)  # 每4天发送一次心跳
-
-# 启动一个线程来运行心跳函数
-if 'heartbeat_thread' not in st.session_state:
-    heartbeat_thread = threading.Thread(target=send_heartbeat)
-    heartbeat_thread.start()
-    st.session_state['heartbeat_thread'] = heartbeat_thread
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
