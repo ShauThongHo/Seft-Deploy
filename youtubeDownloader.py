@@ -4,23 +4,18 @@ import os
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
-    # Extract information to determine if it's a playlist or a single video
-    with yt_dlp.YoutubeDL() as ydl:
-        info_dict = ydl.extract_info(url, download=False)
-        is_playlist = 'entries' in info_dict
-
-    # Set the download options based on user choice and type (video or playlist)
+    # Set the download options based on user choice
     if choice == 'Video':
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
-            'outtmpl': '%(playlist)s/%(title)s.%(ext)s' if is_playlist else '%(title)s.%(ext)s',
+            'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',  # Ensure the output format is mp4
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': '%(playlist)s/%(title)s.%(ext)s' if is_playlist else '%(title)s.%(ext)s',
+            'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',  # Change the codec to mp3
