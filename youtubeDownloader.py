@@ -48,13 +48,8 @@ def download_youtube_video_or_audio(url, choice):
     # Download the video or audio using yt_dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
-        if is_playlist:
-            for entry in info_dict['entries']:
-                file_name = ydl.prepare_filename(entry)
-                st.write(f"Downloaded file: {file_name}")
-        else:
-            file_name = ydl.prepare_filename(info_dict)
-            st.write(f"Downloaded file: {file_name}")
+        file_name = ydl.prepare_filename(info_dict)
+        st.write(f"Downloaded file: {file_name}")
         
         # Check if the file is in webm format and convert it to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
@@ -112,7 +107,6 @@ if 'conversion_progress_bar' not in st.session_state:
 # Download button
 if st.button("Download"):
     if url:
-        st.write(f"Starting download for URL: {url}")
         file_path = download_youtube_video_or_audio(url, choice)
         if file_path and os.path.exists(file_path):
             st.success(f"Download available: {file_path}")
