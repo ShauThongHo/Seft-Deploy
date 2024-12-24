@@ -81,13 +81,10 @@ if st.button("Download"):
         file_path = download_youtube_video_or_audio(url, choice)
         if file_path and os.path.exists(file_path):
             st.success(f"Download complete: {file_path}")
-            
-            # Provide a direct download link
             with open(file_path, "rb") as file:
-                file_data = file.read()
-                st.download_button(
+                btn = st.download_button(
                     label="Download File",
-                    data=file_data,
+                    data=file,
                     file_name=os.path.basename(file_path),
                     mime="audio/mpeg" if choice == "Audio" else "video/mp4"
                 )
