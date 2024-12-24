@@ -1,7 +1,6 @@
 import streamlit as st
 import yt_dlp
 import os
-from pydub import AudioSegment
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -34,19 +33,12 @@ def download_youtube_video_or_audio(url, choice):
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
         
-        # Convert webm to mp3 if necessary
+        # Check if the file is in webm format and convert it to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
             mp3_file_name = file_name.replace('.webm', '.mp3')
             if os.path.exists(file_name):
-                try:
-                    audio = AudioSegment.from_file(file_name, format="webm")
-                    audio.export(mp3_file_name, format="mp3")
-                    os.remove(file_name)  # Remove the original webm file
-                    file_name = mp3_file_name
-                except Exception as e:
-                    st.error(f"Error converting file: {e}")
-            else:
-                st.error("Downloaded file not found for conversion.")
+                os.rename(file_name, mp3_file_name)
+                file_name = mp3_file_name
         
         st.write(f"Downloaded file path: {file_name}")  # Debug statement
         return file_name
