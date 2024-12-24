@@ -21,6 +21,7 @@ def download_youtube_video_or_audio(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+            'keepvideo': True,  # Keep the original video file
             'progress_hooks': [my_hook],
         }
     else:
