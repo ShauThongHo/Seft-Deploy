@@ -16,6 +16,7 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(playlist)s/%(title)s.%(ext)s' if is_playlist else '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',  # Ensure the output format is mp4
             'progress_hooks': [my_hook],
+            'noplaylist': False  # Ensure playlists are downloaded
         }
     elif choice == 'Audio':
         ydl_opts = {
@@ -28,6 +29,7 @@ def download_youtube_video_or_audio(url, choice):
             }],
             'progress_hooks': [my_hook],
             'keepvideo': True,  # Keep the video file after extraction
+            'noplaylist': False  # Ensure playlists are downloaded
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
@@ -108,5 +110,5 @@ if st.button("Download"):
         st.error("Please enter a valid YouTube URL.")
 
 # Quit button
-if st.button("Clear", on_click=clear_input):
+if st.button("Quit", on_click=clear_input):
     st.stop()
