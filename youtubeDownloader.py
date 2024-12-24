@@ -79,7 +79,7 @@ if st.button("Download"):
                     label="Download File",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="audio/mpeg" if choice == "Audio" else "video/mp4"
+                    mime="audio/mp3" if choice == "Audio" else "video/mp4"
                 )
         else:
             st.error("File not found. Please try again.")
