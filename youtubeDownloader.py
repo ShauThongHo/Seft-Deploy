@@ -60,11 +60,15 @@ def my_hook(d):
         except ValueError:
             st.error(f"Invalid conversion progress value: {percent_str}")
 
+# Function to clear the input field
+def clear_input():
+    st.session_state.url = ""
+
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
 
 # Input URL
-url = st.text_input("Enter the YouTube URL:")
+url = st.text_input("Enter the YouTube URL:", key="url")
 
 # Select download type
 choice = st.selectbox("Do you want to download video or audio?", ('Video', 'Audio'))
@@ -80,7 +84,7 @@ if st.button("Download"):
     if url:
         file_path = download_youtube_video_or_audio(url, choice)
         if file_path and os.path.exists(file_path):
-            st.success(f"Download avaiable: {file_path}")
+            st.success(f"Download available: {file_path}")
             with open(file_path, "rb") as file:
                 btn = st.download_button(
                     label="Download File",
@@ -88,6 +92,7 @@ if st.button("Download"):
                     file_name=os.path.basename(file_path),
                     mime="audio/mpeg" if choice == "Audio" else "video/mp4"
                 )
+            clear_input()  # Clear the input field after download
         else:
             st.error("File not found. Please try again.")
     else:
@@ -95,4 +100,5 @@ if st.button("Download"):
 
 # Quit button
 if st.button("Quit"):
+    clear_input()  # Clear the input field when quitting
     st.stop()
