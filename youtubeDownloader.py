@@ -1,5 +1,6 @@
 import streamlit as st
 import yt_dlp
+from tqdm import tqdm
 import os
 
 # Function to download YouTube video or audio
@@ -9,7 +10,6 @@ def download_youtube_video_or_audio(url, choice):
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
-            'merge_output_format': 'mp4',  # Ensure the output format is mp4
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -21,6 +21,7 @@ def download_youtube_video_or_audio(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+            'keepvideo': True,  # Keep the original video file
             'progress_hooks': [my_hook],
         }
     else:
@@ -31,6 +32,8 @@ def download_youtube_video_or_audio(url, choice):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
+        st.write(f"File downloaded to: {file_name}")  # Debugging information
+        st.write(f"File exists: {os.path.exists(file_name)}")  # Check if file exists
         return file_name
 
 def my_hook(d):
