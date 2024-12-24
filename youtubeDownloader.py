@@ -32,6 +32,13 @@ def download_youtube_video_or_audio(url, choice):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
+        
+        # Check if the file is in webm format and convert it to mp3 if necessary
+        if choice == 'Audio' and file_name.endswith('.webm'):
+            mp3_file_name = file_name.replace('.webm', '.mp3')
+            os.rename(file_name, mp3_file_name)
+            file_name = mp3_file_name
+        
         st.write(f"Downloaded file path: {file_name}")  # Debug statement
         return file_name
 
