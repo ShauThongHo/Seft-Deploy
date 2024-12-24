@@ -1,5 +1,7 @@
 import streamlit as st
 import yt_dlp
+from tqdm import tqdm
+import os
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -27,16 +29,18 @@ def download_youtube_video_or_audio(url, choice):
     
     # Download the video or audio using yt-dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        info_dict = ydl.extract_info(url, download=True)
+        file_name = ydl.prepare_filename(info_dict)
+        return file_name
 
 def my_hook(d):
     if d['status'] == 'downloading':
-        percent = d['_percent_str'].strip().replace('%', '')
+        percent_str = d['_percent_str'].strip().replace('%', '')
         try:
-            percent = float(percent)
+            percent = float(percent_str)
             st.session_state.progress_bar.progress(int(percent))
         except ValueError:
-            st.error(f"Invalid progress value: {percent}")
+            st.error(f"Invalid progress value: {percent_str}")
     elif d['status'] == 'finished':
         st.session_state.progress_bar.empty()
         st.success('Download complete, now converting ...')
@@ -57,7 +61,16 @@ if 'progress_bar' not in st.session_state:
 # Download button
 if st.button("Download"):
     if url:
-        download_youtube_video_or_audio(url, choice)
+        file_path = download_youtube_video_or_audio(url, choice)
+        if file_path:
+            st.success(f"Download complete: {file_path}")
+            with open(file_path, "rb") as file:
+                btn = st.download_button(
+                    label="Download File",
+                    data=file,
+                    file_name=os.path.basename(file_path),
+                    mime="application/octet-stream"
+                )
     else:
         st.error("Please enter a valid YouTube URL.")
 
