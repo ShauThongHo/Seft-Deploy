@@ -39,8 +39,6 @@ def download_youtube_video_or_audio(url, choice):
             if os.path.exists(file_name):
                 os.rename(file_name, mp3_file_name)
                 file_name = mp3_file_name
-        
-        st.write(f"Downloaded file path: {file_name}")  # Debug statement
         return file_name
 
 def my_hook(d):
