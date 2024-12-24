@@ -67,8 +67,7 @@ def clear_input():
 
 # Function to keep the app active
 def keep_active():
-    st.write("Keeping the app active...")
-    threading.Timer(300, keep_active).start()  # Set the timer to 5 minutes (300 seconds)
+    threading.Timer(345600, keep_active).start()  # Set the timer to 4 days (345600 seconds)
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
