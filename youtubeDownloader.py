@@ -32,6 +32,7 @@ def download_youtube_video_or_audio(url, choice):
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
         st.write(f"File downloaded to: {file_name}")  # Debugging information
+        st.write(f"File exists: {os.path.exists(file_name)}")  # Check if file exists
         return file_name
 
 def my_hook(d):
