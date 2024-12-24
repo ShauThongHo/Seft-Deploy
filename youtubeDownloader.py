@@ -32,6 +32,7 @@ def download_youtube_video_or_audio(url, choice):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
+        st.write(f"Downloaded file path: {file_name}")  # Debug statement
         return file_name
 
 def my_hook(d):
