@@ -67,6 +67,10 @@ def clear_input():
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
 
+# Initialize the URL in session state if not already done
+if 'url' not in st.session_state:
+    st.session_state.url = ""
+
 # Input URL
 url = st.text_input("Enter the YouTube URL:", key="url")
 
