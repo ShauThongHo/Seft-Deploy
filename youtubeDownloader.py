@@ -1,6 +1,7 @@
 import streamlit as st
 import yt_dlp
 import os
+import threading
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -64,6 +65,11 @@ def my_hook(d):
 def clear_input():
     st.session_state.url = ""
 
+# Function to keep the app active
+def keep_active():
+    st.write("Keeping the app active...")
+    threading.Timer(300, keep_active).start()  # Set the timer to 5 minutes (300 seconds)
+
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
 
@@ -82,6 +88,9 @@ if 'progress_bar' not in st.session_state:
     st.session_state.progress_bar = st.empty()
 if 'conversion_progress_bar' not in st.session_state:
     st.session_state.conversion_progress_bar = st.empty()
+
+# Start the timer to keep the app active
+keep_active()
 
 # Download button
 if st.button("Download"):
