@@ -22,7 +22,7 @@ def download_youtube_video_or_audio(url, choice):
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
-            'keepvideo': False,  # Do not keep the original video file
+            'keepvideo': True,  # Keep the video file after extraction
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
