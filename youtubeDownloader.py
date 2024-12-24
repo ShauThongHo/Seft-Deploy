@@ -47,6 +47,13 @@ def my_hook(d):
     elif d['status'] == 'finished':
         st.session_state.progress_bar.empty()
         st.success('Download complete, now converting ...')
+    elif d['status'] == 'postprocessing':
+        percent_str = d['_percent_str'].strip().replace('%', '')
+        try:
+            percent = float(percent_str)
+            st.session_state.conversion_progress_bar.progress(int(percent))
+        except ValueError:
+            st.error(f"Invalid conversion progress value: {percent_str}")
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
@@ -57,9 +64,11 @@ url = st.text_input("Enter the YouTube URL:")
 # Select download type
 choice = st.selectbox("Do you want to download video or audio?", ('Video', 'Audio'))
 
-# Initialize the progress bar in session state
+# Initialize the progress bars in session state
 if 'progress_bar' not in st.session_state:
     st.session_state.progress_bar = st.empty()
+if 'conversion_progress_bar' not in st.session_state:
+    st.session_state.conversion_progress_bar = st.empty()
 
 # Download button
 if st.button("Download"):
