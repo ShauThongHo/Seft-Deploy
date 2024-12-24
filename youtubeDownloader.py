@@ -46,7 +46,7 @@ def my_hook(d):
         st.session_state.progress_bar.empty()
         st.success('Download complete, now converting ...')
     elif d['status'] == 'postprocessing':
-        percent_str = d['_percent_str'].strip().replace('%', '')
+        percent_str = d.get('_percent_str', '0.0').strip().replace('%', '')
         try:
             percent = float(percent_str)
             st.session_state.conversion_progress_bar.progress(int(percent))
