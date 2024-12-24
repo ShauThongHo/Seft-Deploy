@@ -12,8 +12,6 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',  # Ensure the output format is mp4
             'progress_hooks': [my_hook],
-            'n_threads': 4,  # Enable multithreading with 4 threads
-            'buffersize': '16M',  # Increase buffer size to 16MB
         }
     elif choice == 'Audio':
         ydl_opts = {
@@ -26,8 +24,6 @@ def download_youtube_video_or_audio(url, choice):
             }],
             'progress_hooks': [my_hook],
             'keepvideo': True,  # Keep the video file after extraction
-            'n_threads': 4,  # Enable multithreading with 4 threads
-            'buffersize': '16M',  # Increase buffer size to 16MB
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
