@@ -1,6 +1,15 @@
 import streamlit as st
 import yt_dlp
 import os
+import subprocess
+
+# Check if ffmpeg is installed
+def check_ffmpeg():
+    try:
+        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        st.write("FFmpeg is installed.")
+    except subprocess.CalledProcessError:
+        st.error("FFmpeg is not installed. Please install FFmpeg to proceed.")
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -8,6 +17,7 @@ def download_youtube_video_or_audio(url, choice):
     with yt_dlp.YoutubeDL() as ydl:
         info_dict = ydl.extract_info(url, download=False)
         is_playlist = 'entries' in info_dict
+        st.write(f"Is playlist: {is_playlist}")
 
     # Set the download options based on user choice and type (video or playlist)
     if choice == 'Video':
@@ -35,10 +45,11 @@ def download_youtube_video_or_audio(url, choice):
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
         return None
     
-    # Download the video or audio using yt-dlp
+    # Download the video or audio using yt_dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         file_name = ydl.prepare_filename(info_dict)
+        st.write(f"Downloaded file: {file_name}")
         
         # Check if the file is in webm format and convert it to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
@@ -73,6 +84,9 @@ def clear_input():
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
+
+# Check if ffmpeg is installed
+check_ffmpeg()
 
 # Initialize the URL in session state if not already done
 if 'url' not in st.session_state:
