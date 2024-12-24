@@ -87,6 +87,7 @@ if st.button("Download"):
                     data=file,
                     file_name=os.path.basename(file_path),
                     mime="audio/mpeg" if choice == "Audio" else "video/mp4"
+                    'keepvideo': False,  # Delete the video file after extraction
                 )
         else:
             st.error("File not found. Please try again.")
