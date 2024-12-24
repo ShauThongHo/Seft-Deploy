@@ -19,7 +19,7 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',  # Change the codec to mp3
+                'preferredcodec': 'webm',  # Change the codec to webm for initial download
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
@@ -37,10 +37,11 @@ def download_youtube_video_or_audio(url, choice):
         # Convert webm to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
             mp3_file_name = file_name.replace('.webm', '.mp3')
-            audio = AudioSegment.from_file(file_name, format="webm")
-            audio.export(mp3_file_name, format="mp3")
-            os.remove(file_name)  # Remove the original webm file
-            file_name = mp3_file_name
+            if os.path.exists(file_name):
+                audio = AudioSegment.from_file(file_name, format="webm")
+                audio.export(mp3_file_name, format="mp3")
+                os.remove(file_name)  # Remove the original webm file
+                file_name = mp3_file_name
         
         st.write(f"Downloaded file path: {file_name}")  # Debug statement
         return file_name
