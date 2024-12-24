@@ -22,7 +22,7 @@ def download_youtube_video_or_audio(url, choice):
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
-            'keepvideo': True,  # Keep the video file after extraction
+            'keepvideo': False,  # Keep the video file after extraction
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
@@ -35,7 +35,7 @@ def download_youtube_video_or_audio(url, choice):
         
         # Check if the file is in webm format and convert it to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
-            mp3_file_name = file_name.replace('.webm', '.mp3')
+            mp3_file_name = file_name.replace('.webm', '.mp3') 
             if os.path.exists(file_name):
                 os.rename(file_name, mp3_file_name)
                 file_name = mp3_file_name
