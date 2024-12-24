@@ -45,11 +45,16 @@ def download_youtube_video_or_audio(url, choice):
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
         return None
     
-    # Download the video or audio using yt_dlp
+    # Download the video or audio using yt-dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
-        file_name = ydl.prepare_filename(info_dict)
-        st.write(f"Downloaded file: {file_name}")
+        if is_playlist:
+            for entry in info_dict['entries']:
+                file_name = ydl.prepare_filename(entry)
+                st.write(f"Downloaded file: {file_name}")
+        else:
+            file_name = ydl.prepare_filename(info_dict)
+            st.write(f"Downloaded file: {file_name}")
         
         # Check if the file is in webm format and convert it to mp3 if necessary
         if choice == 'Audio' and file_name.endswith('.webm'):
