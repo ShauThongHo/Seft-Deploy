@@ -60,7 +60,7 @@ def my_hook(d):
         except ValueError:
             st.error(f"Invalid conversion progress value: {percent_str}")
 
-# Function to clear the input field
+# Callback function to clear the input field
 def clear_input():
     st.session_state.url = ""
 
@@ -94,15 +94,14 @@ if st.button("Download"):
                     label="Download File",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="audio/mpeg" if choice == "Audio" else "video/mp4"
+                    mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                    on_click=clear_input  # Clear the input field after download
                 )
-            clear_input()  # Clear the input field after download
         else:
             st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
 
 # Quit button
-if st.button("Quit"):
-    clear_input()  # Clear the input field when quitting
+if st.button("Quit", on_click=clear_input):
     st.stop()
