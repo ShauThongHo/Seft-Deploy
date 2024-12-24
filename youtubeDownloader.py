@@ -25,7 +25,7 @@ def download_youtube_video_or_audio(url, choice):
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
-        return
+        return None
     
     # Download the video or audio using yt-dlp
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -62,7 +62,7 @@ if 'progress_bar' not in st.session_state:
 if st.button("Download"):
     if url:
         file_path = download_youtube_video_or_audio(url, choice)
-        if file_path:
+        if file_path and os.path.exists(file_path):
             st.success(f"Download complete: {file_path}")
             with open(file_path, "rb") as file:
                 btn = st.download_button(
@@ -71,6 +71,8 @@ if st.button("Download"):
                     file_name=os.path.basename(file_path),
                     mime="application/octet-stream"
                 )
+        else:
+            st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
 
