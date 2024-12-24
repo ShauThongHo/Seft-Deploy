@@ -31,7 +31,12 @@ def download_youtube_video_or_audio(url, choice):
 
 def my_hook(d):
     if d['status'] == 'downloading':
-        st.session_state.progress_bar.progress(int(d['_percent_str'].strip('%')))
+        percent = d['_percent_str'].strip().replace('%', '')
+        try:
+            percent = float(percent)
+            st.session_state.progress_bar.progress(int(percent))
+        except ValueError:
+            st.error(f"Invalid progress value: {percent}")
     elif d['status'] == 'finished':
         st.session_state.progress_bar.empty()
         st.success('Download complete, now converting ...')
