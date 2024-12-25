@@ -1,6 +1,7 @@
 import streamlit as st
 import yt_dlp
 import pytube
+import youtube_dl
 import os
 import threading
 
@@ -68,11 +69,39 @@ def download_with_pytube(url, choice):
         st.error(f"pytube error: {str(e)}")
         return None
 
+# Function to download YouTube video or audio using youtube-dl
+def download_with_youtubedl(url, choice):
+    ydl_opts = {
+        'format': 'bestvideo+bestaudio/best' if choice == 'Video' else 'bestaudio/best',
+        'outtmpl': '%(title)s.%(ext)s',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }] if choice == 'Audio' else [],
+    }
+    
+    try:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_name = ydl.prepare_filename(info_dict)
+            if choice == 'Audio' and file_name.endswith('.webm'):
+                mp3_file_name = file_name.replace('.webm', '.mp3')
+                if os.path.exists(file_name):
+                    os.rename(file_name, mp3_file_name)
+                    file_name = mp3_file_name
+            return file_name
+    except youtube_dl.utils.DownloadError as e:
+        st.error(f"youtube-dl error: {str(e)}")
+        return None
+
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
     file_name = download_with_ytdlp(url, choice)
     if not file_name:
         file_name = download_with_pytube(url, choice)
+    if not file_name:
+        file_name = download_with_youtubedl(url, choice)
     return file_name
 
 def my_hook(d):

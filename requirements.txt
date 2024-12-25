@@ -4,3 +4,4 @@ tqdm
 pydub
 ffmpeg
 pytube
+youtube-dl
