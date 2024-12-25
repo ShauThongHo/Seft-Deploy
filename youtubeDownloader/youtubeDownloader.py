@@ -4,12 +4,13 @@ import os
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
-    # Set the download options based on user choice
+    # 根据用户选择设置下载选项
     if choice == 'Video':
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
-            'merge_output_format': 'mp4',  # Ensure the output format is mp4
+            'merge_output_format': 'mp4',  # 确保输出格式为 mp4
+            'playlistend': 10,  # 只下载前10个视频
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -18,14 +19,32 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',  # Change the codec to mp3
+                'preferredcodec': 'mp3',  # 将编解码器更改为 mp3
                 'preferredquality': '192',
             }],
+            'playlistend': 10,  # 只下载前10个音频
             'progress_hooks': [my_hook],
-            'keepvideo': True,  # Keep the video file after extraction
+            'keepvideo': True,  # 提取后保留视频文件
         }
     else:
-        st.error("Invalid choice. Please select 'Video' or 'Audio'.")
+        st.error("无效选择。请选择 'Video' 或 'Audio'。")
+        return None
+    
+    # 使用 yt-dlp 下载视频或音频
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_name = ydl.prepare_filename(info_dict)
+            
+            # 检查文件是否为 webm 格式，如果是则转换为 mp3
+            if choice == 'Audio' and file_name.endswith('.webm'):
+                mp3_file_name = file_name.replace('.webm', '.mp3') 
+                if os.path.exists(file_name):
+                    os.rename(file_name, mp3_file_name)
+                    file_name = mp3_file_name
+            return file_name
+    except yt_dlp.utils.DownloadError as e:
+        st.error(f"下载错误：{str(e)}")
         return None
     
     # Download the video or audio using yt-dlp
