@@ -67,14 +67,15 @@ def my_hook(d):
 
 # Function to clear the input field
 def clear_input():
-    st.session_state['url'] = ""
+    st.session_state.url = ""
+    st.experimental_rerun()
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
 
 # Initialize the URL in session state if not already done
 if 'url' not in st.session_state:
-    st.session_state['url'] = ""
+    st.session_state.url = ""
 
 # Input URL
 url = st.text_input("Enter the YouTube URL:", key="url")
