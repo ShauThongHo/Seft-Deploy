@@ -32,17 +32,22 @@ def download_youtube_video_or_audio(url, choice):
         return None
     
     # Download the video or audio using yt-dlp
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(url, download=True)
-        file_name = ydl.prepare_filename(info_dict)
-        
-        # Check if the file is in webm format and convert it to mp3 if necessary
-        if choice == 'Audio' and file_name.endswith('.webm'):
-            mp3_file_name = file_name.replace('.webm', '.mp3') 
-            if os.path.exists(file_name):
-                os.rename(file_name, mp3_file_name)
-                file_name = mp3_file_name
-        return file_name
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_name = ydl.prepare_filename(info_dict)
+            
+            # Check if the file is in webm format and convert it to mp3 if necessary
+            if choice == 'Audio' and file_name.endswith('.webm'):
+                mp3_file_name = file_name.replace('.webm', '.mp3') 
+                if os.path.exists(file_name):
+                    os.rename(file_name, mp3_file_name)
+                    file_name = mp3_file_name
+            return file_name
+    except yt_dlp.utils.DownloadError as e:
+        st.error(f"Download error: {str(e)}")
+        return None
+
 
 def my_hook(d):
     if d['status'] == 'downloading':
