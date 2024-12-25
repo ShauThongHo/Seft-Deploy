@@ -13,7 +13,7 @@ def download_youtube_video_or_audio(url, choice):
             'merge_output_format': 'mp4',
             'playlistend': 1,
             'progress_hooks': [my_hook],
-            'cookiesfrombrowser': ('chrome',)
+            'cookiefile': 'cookies.txt'  # Path to your cookies file
         }
     elif choice == 'Audio':
         ydl_opts = {
@@ -27,7 +27,7 @@ def download_youtube_video_or_audio(url, choice):
             'playlistend': 1,
             'progress_hooks': [my_hook],
             'keepvideo': True,
-            'cookiesfrombrowser': ('chrome',)
+            'cookiefile': 'cookies.txt'  # Path to your cookies file
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
