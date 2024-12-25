@@ -10,9 +10,10 @@ def download_youtube_video_or_audio(url, choice):
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
-            'merge_output_format': 'mp4',  # Ensure the output format is mp4
-            'playlistend': 1,  # Download only the first video in the playlist
+            'merge_output_format': 'mp4',
+            'playlistend': 1,
             'progress_hooks': [my_hook],
+            'cookiesfrombrowser': ('chrome',)
         }
     elif choice == 'Audio':
         ydl_opts = {
@@ -20,12 +21,13 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',  # Change the codec to mp3
+                'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'playlistend': 1,  # Download only the first audio in the playlist
+            'playlistend': 1,
             'progress_hooks': [my_hook],
-            'keepvideo': True,  # Keep the video file after extraction
+            'keepvideo': True,
+            'cookiesfrombrowser': ('chrome',)
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
