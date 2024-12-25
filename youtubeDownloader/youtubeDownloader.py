@@ -67,7 +67,7 @@ def my_hook(d):
 
 # Function to clear the input field
 def clear_input():
-    st.session_state.url = ""
+    st.experimental_set_query_params(url="")
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
@@ -104,6 +104,6 @@ if st.button("Download"):
         st.error("Please enter a valid YouTube URL.")
 
 # Quit button
-if st.button("Quit"):
+if st.button("Clear"):
     clear_input()  # Clear the input field when quitting
     st.stop()
