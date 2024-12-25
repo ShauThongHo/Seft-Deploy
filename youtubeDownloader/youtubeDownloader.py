@@ -67,7 +67,7 @@ def my_hook(d):
 
 # Function to clear the input field
 def clear_input():
-    st.experimental_set_query_params(url="")
+    st.session_state.url = ""
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
