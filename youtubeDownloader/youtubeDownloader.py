@@ -1,7 +1,6 @@
 import streamlit as st
 import yt_dlp
 import os
-import threading
 
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
@@ -61,20 +60,12 @@ def my_hook(d):
         except ValueError:
             st.error(f"Invalid conversion progress value: {percent_str}")
 
-# Callback function to clear the input field
+# Function to clear the input field
 def clear_input():
     st.session_state.url = ""
 
-# Function to keep the app active
-def keep_active():
-    threading.Timer(345600, keep_active).start()  # Set the timer to 4 days (345600 seconds)
-
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
-
-# Initialize the URL in session state if not already done
-if 'url' not in st.session_state:
-    st.session_state.url = ""
 
 # Input URL
 url = st.text_input("Enter the YouTube URL:", key="url")
@@ -88,9 +79,6 @@ if 'progress_bar' not in st.session_state:
 if 'conversion_progress_bar' not in st.session_state:
     st.session_state.conversion_progress_bar = st.empty()
 
-# Start the timer to keep the app active
-keep_active()
-
 # Download button
 if st.button("Download"):
     if url:
@@ -102,14 +90,15 @@ if st.button("Download"):
                     label="Download File",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                    on_click=clear_input  # Clear the input field after download
+                    mime="audio/mpeg" if choice == "Audio" else "video/mp4"
                 )
+            clear_input()  # Clear the input field after download
         else:
             st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
 
 # Quit button
-if st.button("Clear", on_click=clear_input):
+if st.button("Quit"):
+    clear_input()  # Clear the input field when quitting
     st.stop()
