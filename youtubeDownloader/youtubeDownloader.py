@@ -1,15 +1,17 @@
 import streamlit as st
 import yt_dlp
 import os
+import threading
 
+# Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
-    # 根据用户选择设置下载选项
+    # Set the download options based on user choice
     if choice == 'Video':
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
-            'merge_output_format': 'mp4',  # 确保输出格式为 mp4
-            'playlistend': 10,  # 只下载前10个视频
+            'merge_output_format': 'mp4',  # Ensure the output format is mp4
+            'playlistend': 1,  # Download only the first video in the playlist
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -18,34 +20,29 @@ def download_youtube_video_or_audio(url, choice):
             'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',  # 将编解码器更改为 mp3
+                'preferredcodec': 'mp3',  # Change the codec to mp3
                 'preferredquality': '192',
             }],
-            'playlistend': 10,  # 只下载前10个音频
             'progress_hooks': [my_hook],
-            'keepvideo': True,  # 提取后保留视频文件
+            'keepvideo': True,  # Keep the video file after extraction
         }
     else:
-        st.error("无效选择。请选择 'Video' 或 'Audio'。")
+        st.error("Invalid choice. Please select 'Video' or 'Audio'.")
         return None
     
-    # 使用 yt-dlp 下载视频或音频
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=True)
-            file_name = ydl.prepare_filename(info_dict)
-            
-            # 检查文件是否为 webm 格式，如果是则转换为 mp3
-            if choice == 'Audio' and file_name.endswith('.webm'):
-                mp3_file_name = file_name.replace('.webm', '.mp3') 
-                if os.path.exists(file_name):
-                    os.rename(file_name, mp3_file_name)
-                    file_name = mp3_file_name
-            return file_name
-    except yt_dlp.utils.DownloadError as e:
-        st.error(f"下载错误：{str(e)}")
-        return None
-    
+    # Download the video or audio using yt-dlp
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=True)
+        file_name = ydl.prepare_filename(info_dict)
+        
+        # Check if the file is in webm format and convert it to mp3 if necessary
+        if choice == 'Audio' and file_name.endswith('.webm'):
+            mp3_file_name = file_name.replace('.webm', '.mp3') 
+            if os.path.exists(file_name):
+                os.rename(file_name, mp3_file_name)
+                file_name = mp3_file_name
+        return file_name
+
 def my_hook(d):
     if d['status'] == 'downloading':
         percent_str = d['_percent_str'].strip().replace('%', '')
@@ -65,10 +62,13 @@ def my_hook(d):
         except ValueError:
             st.error(f"Invalid conversion progress value: {percent_str}")
 
-# Function to clear the input field
+# Callback function to clear the input field
 def clear_input():
     st.session_state.url = ""
-    st.experimental_rerun()
+
+# Function to keep the app active
+def keep_active():
+    threading.Timer(345600, keep_active).start()  # Set the timer to 4 days (345600 seconds)
 
 # Streamlit app
 st.title("YouTube Video/Audio Downloader")
@@ -89,6 +89,9 @@ if 'progress_bar' not in st.session_state:
 if 'conversion_progress_bar' not in st.session_state:
     st.session_state.conversion_progress_bar = st.empty()
 
+# Start the timer to keep the app active
+keep_active()
+
 # Download button
 if st.button("Download"):
     if url:
@@ -100,14 +103,14 @@ if st.button("Download"):
                     label="Download File",
                     data=file,
                     file_name=os.path.basename(file_path),
-                    mime="audio/mpeg" if choice == "Audio" else "video/mp4"
+                    mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                    on_click=clear_input  # Clear the input field after download
                 )
-            clear_input()  # Clear the input field after download
         else:
             st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
 
-# Clear button
-if st.button("Clear"):
-    clear_input()  # Clear the input field when quitting
+# Quit button
+if st.button("Clear", on_click=clear_input):
+    st.stop()
