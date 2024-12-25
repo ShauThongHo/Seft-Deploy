@@ -23,6 +23,7 @@ def download_youtube_video_or_audio(url, choice):
                 'preferredcodec': 'mp3',  # Change the codec to mp3
                 'preferredquality': '192',
             }],
+            'playlistend': 1,  # Download only the first audio in the playlist
             'progress_hooks': [my_hook],
             'keepvideo': True,  # Keep the video file after extraction
         }
