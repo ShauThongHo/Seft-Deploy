@@ -10,7 +10,7 @@ def download_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            'playlistend': 1,  # Limit to the first 5 items in the playlist
+            'playlistend': 1,
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -22,7 +22,7 @@ def download_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'playlistend': 1,  # Limit to the first 5 items in the playlist
+            'playlistend': 1,
             'progress_hooks': [my_hook],
             'keepvideo': True,
         }
@@ -34,6 +34,7 @@ def download_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
+            st.write(f"Downloaded file: {file_name}")
             if choice == 'Audio' and file_name.endswith('.webm'):
                 mp3_file_name = file_name.replace('.webm', '.mp3')
                 if os.path.exists(file_name):
