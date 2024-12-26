@@ -36,12 +36,18 @@ def download_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
+            st.write(f"Downloaded file: {file_name}")
             if choice == 'Audio' and file_name.endswith('.webm'):
                 mp3_file_name = file_name.replace('.webm', '.mp3')
                 if os.path.exists(file_name):
                     os.rename(file_name, mp3_file_name)
                     file_name = mp3_file_name
-            return file_name
+                    st.write(f"Renamed file: {file_name}")
+            if os.path.exists(file_name):
+                return file_name
+            else:
+                st.error("File not found after download.")
+                return None
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
         return None
