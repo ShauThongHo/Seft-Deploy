@@ -10,6 +10,7 @@ def download_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
+            'playlistend': 1,  # Limit to the first 5 items in the playlist
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -21,6 +22,7 @@ def download_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+            'playlistend': 1,  # Limit to the first 5 items in the playlist
             'progress_hooks': [my_hook],
             'keepvideo': True,
         }
