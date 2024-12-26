@@ -10,7 +10,7 @@ def download_individual_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            'playlistend': 1,
+            'playlistend': 5,
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -22,7 +22,7 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'playlistend': 1,
+            'playlistend': 5,
             'progress_hooks': [my_hook],
             'keepvideo': True,
         }
