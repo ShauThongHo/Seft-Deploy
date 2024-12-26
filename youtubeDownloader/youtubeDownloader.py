@@ -10,6 +10,7 @@ def download_individual_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
+            #must have 'playlistend': 5, to limit the number of videos downloaded
             'playlistend': 5,
             'progress_hooks': [my_hook],
         }
@@ -22,9 +23,10 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
+            #must have 'playlistend': 5, to limit the number of videos downloaded
             'playlistend': 5,
             'progress_hooks': [my_hook],
-            'keepvideo': True,
+            'keepvideo': False,
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
@@ -34,11 +36,13 @@ def download_individual_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
-            if choice == 'Audio' and file_name.endswith('.webm'):
-                mp3_file_name = file_name.replace('.webm', '.mp3')
+            st.write(f"Downloaded file: {file_name}")
+            if choice == 'Audio' and not file_name.endswith('.mp3'):
+                mp3_file_name = file_name.rsplit('.', 1)[0] + '.mp3'
                 if os.path.exists(file_name):
                     os.rename(file_name, mp3_file_name)
                     file_name = mp3_file_name
+                    st.write(f"Renamed file: {file_name}")
             if os.path.exists(file_name):
                 return file_name
             else:
@@ -48,7 +52,7 @@ def download_individual_with_ytdlp(url, choice):
         st.error(f"yt-dlp error: {str(e)}")
         return None
 
-# Function to download YouTube playlist
+# Function to download YouTube playlist using yt-dlp
 def download_playlist_with_ytdlp(url, choice):
     ydl_opts = {
         'extract_flat': True,
@@ -82,7 +86,7 @@ def my_hook(d):
             st.error(f"Invalid progress value: {percent_str}")
     elif d['status'] == 'finished':
         st.session_state.progress_bar.empty()
-        st.success('Download complete, now converting ...')
+        st.success('Download complete, now converting...')
     elif d['status'] == 'postprocessing':
         percent_str = d.get('_percent_str', '0.0').strip().replace('%', '')
         try:
