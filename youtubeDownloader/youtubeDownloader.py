@@ -41,6 +41,7 @@ def download_with_ytdlp(url, choice):
                     os.rename(file_name, mp3_file_name)
                     file_name = mp3_file_name
                     st.write(f"Renamed file: {file_name}")
+            st.write(f"Final file path: {file_name}")
             if os.path.exists(file_name):
                 return file_name
             else:
