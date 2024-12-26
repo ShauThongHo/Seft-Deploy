@@ -23,7 +23,7 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredquality': '192',
             }],
             'progress_hooks': [my_hook],
-            'keepvideo': False,
+            'keepvideo': True,
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
