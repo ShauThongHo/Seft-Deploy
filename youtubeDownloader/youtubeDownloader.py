@@ -146,25 +146,19 @@ if 'conversion_progress_bar' not in st.session_state:
 keep_active()
 
 if st.button("Download"):
-    if url:
-        if 'playlist' in url:
-            download_playlist_with_ytdlp(url, choice)
-        else:
-            file_path = download_individual_with_ytdlp(url, choice)
-            if file_path and os.path.exists(file_path):
-                st.success(f"Download available: {file_path}")
-                with open(file_path, "rb") as file:
-                    btn = st.download_button(
-                        label="Download File",
-                        data=file,
-                        file_name=os.path.basename(file_path),
-                        mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                        on_click=clear_input
-                    )
-            else:
-                st.error("File not found. Please try again.")
+    file_path = download_individual_with_ytdlp(url, choice)
+    if file_path and os.path.exists(file_path):
+        st.success(f"Download available: {file_path}")
+        with open(file_path, "rb") as file:
+            btn = st.download_button(
+                label="Download File",
+                data=file,
+                file_name=os.path.basename(file_path),
+                mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                on_click=clear_input
+            )
     else:
-        st.error("Please enter a valid YouTube URL.")
+        st.error("File not found. Please try again.")
         
 if st.button("Clear", on_click=clear_input):
     st.stop()
