@@ -1,6 +1,5 @@
 import streamlit as st
 import yt_dlp
-import pytube
 import youtube_dl
 import os
 import threading
@@ -52,29 +51,6 @@ def download_with_ytdlp(url, choice):
         st.error(f"yt-dlp error: {str(e)}")
         return None
 
-# Function to download YouTube video or audio using pytube
-def download_with_pytube(url, choice):
-    try:
-        yt = pytube.YouTube(url)
-        if choice == 'Video':
-            stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
-        elif choice == 'Audio':
-            stream = yt.streams.filter(only_audio=True).first()
-        else:
-            st.error("Invalid choice. Please select 'Video' or 'Audio'.")
-            return None
-        
-        file_name = stream.download()
-        if choice == 'Audio':
-            base, ext = os.path.splitext(file_name)
-            new_file = base + '.mp3'
-            os.rename(file_name, new_file)
-            file_name = new_file
-        return file_name
-    except Exception as e:
-        st.error(f"pytube error: {str(e)}")
-        return None
-
 # Function to download YouTube video or audio using youtube-dl
 def download_with_youtubedl(url, choice):
     ydl_opts = {
@@ -104,8 +80,6 @@ def download_with_youtubedl(url, choice):
 # Function to download YouTube video or audio
 def download_youtube_video_or_audio(url, choice):
     file_name = download_with_ytdlp(url, choice)
-    if not file_name:
-        file_name = download_with_pytube(url, choice)
     if not file_name:
         file_name = download_with_youtubedl(url, choice)
     return file_name
