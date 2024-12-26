@@ -11,7 +11,6 @@ def download_individual_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            'playlistend': 1,
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -23,7 +22,6 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'playlistend': 1,
             'progress_hooks': [my_hook],
             'keepvideo': False,
         }
@@ -54,24 +52,34 @@ def download_individual_with_ytdlp(url, choice):
 # Function to download YouTube playlist using yt-dlp
 def download_playlist_with_ytdlp(url, choice):
     ydl_opts = {
-        'extract_flat': True,
-        'playlistend': 5,  # Limit to the first 5 items in the playlist
+        'format': 'bestaudio/best' if choice == 'Audio' else 'bestvideo+bestaudio/best',
+        'outtmpl': '%(title)s.%(ext)s',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }] if choice == 'Audio' else [],
+        'progress_hooks': [my_hook],
+        'keepvideo': False if choice == 'Audio' else True,
     }
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            playlist_dict = ydl.extract_info(url, download=False)
+            playlist_dict = ydl.extract_info(url, download=True)
+            downloaded_files = []
             if 'entries' in playlist_dict:
-                downloaded_files = []
                 for entry in playlist_dict['entries']:
-                    video_url = f"https://www.youtube.com/watch?v={entry['id']}"
-                    st.write(f"Downloading: {video_url}")
-                    file_name = download_individual_with_ytdlp(video_url, choice)
-                    if file_name:
-                        st.success(f"Downloaded: {file_name}")
+                    file_name = ydl.prepare_filename(entry)
+                    if choice == 'Audio' and not file_name.endswith('.mp3'):
+                        mp3_file_name = file_name.rsplit('.', 1)[0] + '.mp3'
+                        if os.path.exists(file_name):
+                            os.rename(file_name, mp3_file_name)
+                            file_name = mp3_file_name
+                    if os.path.exists(file_name):
                         downloaded_files.append(file_name)
+                        st.success(f"Downloaded: {file_name}")
                     else:
-                        st.error(f"Failed to download: {video_url}")
+                        st.error(f"Failed to download: {entry['title']}")
                 
                 # Create a zip file of all downloaded files
                 if downloaded_files:
