@@ -10,8 +10,8 @@ def download_individual_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            #must have 'playlistend': 5, to limit the number of videos downloaded
-            'playlistend': 5,
+            #must have 'playlistend', to limit the number of videos downloaded
+            'playlistend': 1,
             'progress_hooks': [my_hook],
         }
     elif choice == 'Audio':
@@ -23,8 +23,8 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            #must have 'playlistend': 5, to limit the number of videos downloaded
-            'playlistend': 5,
+            #must have 'playlistend', to limit the number of videos downloaded
+            'playlistend': 1,
             'progress_hooks': [my_hook],
             'keepvideo': False,
         }
