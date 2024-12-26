@@ -2,6 +2,7 @@ import streamlit as st
 import yt_dlp
 import os
 import threading
+import zipfile
 
 # Function to download individual video or audio using yt-dlp
 def download_individual_with_ytdlp(url, choice):
@@ -10,7 +11,6 @@ def download_individual_with_ytdlp(url, choice):
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': '%(title)s.%(ext)s',
             'merge_output_format': 'mp4',
-            #must have 'playlistend', to limit the number of videos downloaded
             'playlistend': 1,
             'progress_hooks': [my_hook],
         }
@@ -23,7 +23,6 @@ def download_individual_with_ytdlp(url, choice):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            #must have 'playlistend', to limit the number of videos downloaded
             'playlistend': 1,
             'progress_hooks': [my_hook],
             'keepvideo': False,
@@ -63,14 +62,32 @@ def download_playlist_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             playlist_dict = ydl.extract_info(url, download=False)
             if 'entries' in playlist_dict:
+                downloaded_files = []
                 for entry in playlist_dict['entries']:
                     video_url = f"https://www.youtube.com/watch?v={entry['id']}"
                     st.write(f"Downloading: {video_url}")
                     file_name = download_individual_with_ytdlp(video_url, choice)
                     if file_name:
                         st.success(f"Downloaded: {file_name}")
+                        downloaded_files.append(file_name)
                     else:
                         st.error(f"Failed to download: {video_url}")
+                
+                # Create a zip file of all downloaded files
+                if downloaded_files:
+                    zip_file_name = "downloaded_playlist.zip"
+                    with zipfile.ZipFile(zip_file_name, 'w') as zipf:
+                        for file in downloaded_files:
+                            zipf.write(file, os.path.basename(file))
+                    st.success(f"Playlist downloaded and zipped: {zip_file_name}")
+                    with open(zip_file_name, "rb") as file:
+                        btn = st.download_button(
+                            label="Download ZIP",
+                            data=file,
+                            file_name=zip_file_name,
+                            mime="application/zip",
+                            on_click=clear_input
+                        )
             else:
                 st.error("No entries found in the playlist.")
     except yt_dlp.utils.DownloadError as e:
