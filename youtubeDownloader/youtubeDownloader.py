@@ -3,8 +3,8 @@ import yt_dlp
 import os
 import threading
 
-# Function to download YouTube video or audio using yt-dlp
-def download_with_ytdlp(url, choice):
+# Function to download individual video or audio using yt-dlp
+def download_individual_with_ytdlp(url, choice):
     if choice == 'Video':
         ydl_opts = {
             'format': 'bestvideo+bestaudio/best',
@@ -34,7 +34,6 @@ def download_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
-            st.write(f"Downloaded file: {file_name}")
             if choice == 'Audio' and file_name.endswith('.webm'):
                 mp3_file_name = file_name.replace('.webm', '.mp3')
                 if os.path.exists(file_name):
@@ -49,9 +48,29 @@ def download_with_ytdlp(url, choice):
         st.error(f"yt-dlp error: {str(e)}")
         return None
 
-# Function to download YouTube video or audio
-def download_youtube_video_or_audio(url, choice):
-    return download_with_ytdlp(url, choice)
+# Function to download YouTube playlist
+def download_playlist_with_ytdlp(url, choice):
+    ydl_opts = {
+        'extract_flat': True,
+        'playlistend': 5,  # Limit to the first 5 items in the playlist
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            playlist_dict = ydl.extract_info(url, download=False)
+            if 'entries' in playlist_dict:
+                for entry in playlist_dict['entries']:
+                    video_url = entry['url']
+                    st.write(f"Downloading: {video_url}")
+                    file_name = download_individual_with_ytdlp(video_url, choice)
+                    if file_name:
+                        st.success(f"Downloaded: {file_name}")
+                    else:
+                        st.error(f"Failed to download: {video_url}")
+            else:
+                st.error("No entries found in the playlist.")
+    except yt_dlp.utils.DownloadError as e:
+        st.error(f"yt-dlp error: {str(e)}")
 
 def my_hook(d):
     if d['status'] == 'downloading':
@@ -98,19 +117,22 @@ keep_active()
 
 if st.button("Download"):
     if url:
-        file_path = download_youtube_video_or_audio(url, choice)
-        if file_path and os.path.exists(file_path):
-            st.success(f"Download available: {file_path}")
-            with open(file_path, "rb") as file:
-                btn = st.download_button(
-                    label="Download File",
-                    data=file,
-                    file_name=os.path.basename(file_path),
-                    mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                    on_click=clear_input
-                )
+        if 'playlist' in url:
+            download_playlist_with_ytdlp(url, choice)
         else:
-            st.error("File not found. Please try again.")
+            file_path = download_individual_with_ytdlp(url, choice)
+            if file_path and os.path.exists(file_path):
+                st.success(f"Download available: {file_path}")
+                with open(file_path, "rb") as file:
+                    btn = st.download_button(
+                        label="Download File",
+                        data=file,
+                        file_name=os.path.basename(file_path),
+                        mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                        on_click=clear_input
+                    )
+            else:
+                st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
         
