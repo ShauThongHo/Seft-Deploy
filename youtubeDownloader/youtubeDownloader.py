@@ -64,7 +64,7 @@ def download_playlist_with_ytdlp(url, choice):
             playlist_dict = ydl.extract_info(url, download=False)
             if 'entries' in playlist_dict:
                 for entry in playlist_dict['entries']:
-                    video_url = entry['url']
+                    video_url = f"https://www.youtube.com/watch?v={entry['id']}"
                     st.write(f"Downloading: {video_url}")
                     file_name = download_individual_with_ytdlp(video_url, choice)
                     if file_name:
