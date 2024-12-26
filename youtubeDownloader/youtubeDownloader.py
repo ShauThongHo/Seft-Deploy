@@ -131,8 +131,9 @@ def keep_active():
 
 # Streamlit app
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
+
 st.title("YouTube Video/Audio Downloader")
-st.write("Haven't supported playlist download,please input the video url directly.")
+st.write("**Haven't supported playlist download,please input the video url directly.")
 
 if 'url' not in st.session_state:
     st.session_state.url = ""
