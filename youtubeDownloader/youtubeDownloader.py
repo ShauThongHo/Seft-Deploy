@@ -3,6 +3,17 @@ import yt_dlp
 import os
 import threading
 import zipfile
+import requests
+
+# Function to download cookies file from GitHub
+def download_cookies_from_github(repo_url, file_path):
+    response = requests.get(repo_url)
+    if response.status_code == 200:
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+        st.success("Cookies file downloaded successfully.")
+    else:
+        st.error("Failed to download cookies file from GitHub.")
 
 # Function to download individual video or audio using yt-dlp
 def download_individual_with_ytdlp(url, choice):
@@ -136,6 +147,10 @@ if 'conversion_progress_bar' not in st.session_state:
     st.session_state.conversion_progress_bar = st.empty()
 
 keep_active()
+
+repo_url = "https://raw.githubusercontent.com/yourusername/yourrepo/main/cookies.txt"
+cookies_file = "cookies.txt"
+download_cookies_from_github(repo_url, cookies_file)
 
 if st.button("Download"):
     if url:
