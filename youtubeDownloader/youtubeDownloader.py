@@ -82,8 +82,7 @@ def download_playlist_with_ytdlp(url, choice):
                             data=file,
                             file_name=zip_file_name,
                             mime="application/zip",
-                            on_click=clear_input
-                            on_click=lambda: delete_files(downloaded_files + [zip_file_name])
+                            on_click=lambda: (clear_input(), delete_files(downloaded_files + [zip_file_name]))
                         )
             else:
                 st.error("No entries found in the playlist.")
@@ -154,9 +153,7 @@ if st.button("Download"):
                         data=file,
                         file_name=os.path.basename(file_path),
                         mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                        on_click=clear_input
-                        on_click=lambda: delete_files([file_path])
-                    )
+                        on_click=lambda: (clear_input(), delete_files([file_path]))
             else:
                 st.error("File not found. Please try again.")
     else:
