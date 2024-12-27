@@ -6,40 +6,28 @@ import zipfile
 
 # Function to download individual video or audio using yt-dlp
 def download_individual_with_ytdlp(url, choice):
-    if choice == 'Video':
-        ydl_opts = {
-            'format': 'bestvideo+bestaudio/best',
-            'outtmpl': '%(title)s.%(ext)s',
-            'merge_output_format': 'mp4',
-            'progress_hooks': [my_hook],
-        }
-    elif choice == 'Audio':
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': '%(title)s.%(ext)s',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'progress_hooks': [my_hook],
-            'keepvideo': True,
-        }
-    else:
-        st.error("Invalid choice. Please select 'Video' or 'Audio'.")
-        return None
+    ydl_opts = {
+        'format': 'bestvideo+bestaudio/best' if choice == 'Video' else 'bestaudio/best',
+        'outtmpl': '%(title)s.%(ext)s',
+        'merge_output_format': 'mp4' if choice == 'Video' else None,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }] if choice == 'Audio' else [],
+        'progress_hooks': [my_hook],
+        'keepvideo': choice == 'Audio',
+    }
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
-            #st.write(f"Downloaded file: {file_name}")
             if choice == 'Audio' and not file_name.endswith('.mp3'):
-                mp3_file_name = file_name.rsplit('.', 1)[0] + '.mp3'
+                mp3_file_name = os.path.splitext(file_name)[0] + '.mp3'
                 if os.path.exists(file_name):
                     os.rename(file_name, mp3_file_name)
                     file_name = mp3_file_name
-                    #st.write(f"Renamed file: {file_name}")
             if os.path.exists(file_name):
                 return file_name
             else:
@@ -60,8 +48,8 @@ def download_playlist_with_ytdlp(url, choice):
             'preferredquality': '192',
         }] if choice == 'Audio' else [],
         'progress_hooks': [my_hook],
-        'keepvideo': True,
-        'noplaylist': False,  # Ensure playlists are not ignored
+        'keepvideo': choice == 'Audio',
+        'noplaylist': False,
     }
     
     try:
@@ -72,7 +60,7 @@ def download_playlist_with_ytdlp(url, choice):
                 for entry in playlist_dict['entries']:
                     file_name = ydl.prepare_filename(entry)
                     if choice == 'Audio' and not file_name.endswith('.mp3'):
-                        mp3_file_name = file_name.rsplit('.', 1)[0] + '.mp3'
+                        mp3_file_name = os.path.splitext(file_name)[0] + '.mp3'
                         if os.path.exists(file_name):
                             os.rename(file_name, mp3_file_name)
                             file_name = mp3_file_name
@@ -82,7 +70,6 @@ def download_playlist_with_ytdlp(url, choice):
                     else:
                         st.error(f"Failed to download: {entry['title']}")
                 
-                # Create a zip file of all downloaded files
                 if downloaded_files:
                     zip_file_name = "downloaded_playlist.zip"
                     with zipfile.ZipFile(zip_file_name, 'w') as zipf:
@@ -90,7 +77,7 @@ def download_playlist_with_ytdlp(url, choice):
                             zipf.write(file, os.path.basename(file))
                     st.success(f"Playlist downloaded and zipped: {zip_file_name}")
                     with open(zip_file_name, "rb") as file:
-                        btn = st.download_button(
+                        st.download_button(
                             label="Download ZIP",
                             data=file,
                             file_name=zip_file_name,
@@ -121,19 +108,16 @@ def my_hook(d):
         except ValueError:
             st.error(f"Invalid conversion progress value: {percent_str}")
 
-# Callback function to clear the input field
 def clear_input():
     st.session_state.url = ""
 
-# Function to keep the app active
 def keep_active():
     threading.Timer(345600, keep_active).start()
 
-# Streamlit app
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
 
 st.title("YouTube Video/Audio Downloader")
-st.write("**Haven't supported playlist download,please input the video url directly.")
+st.write("**Haven't supported playlist download, please input the video URL directly.**")
 
 if 'url' not in st.session_state:
     st.session_state.url = ""
@@ -150,14 +134,14 @@ keep_active()
 
 if st.button("Download"):
     if url:
-        if 'watchs' in url: #remover s for playlist
+        if 'watchs' in url:  # Remove 's' for playlist
             download_playlist_with_ytdlp(url, choice)
         else:
             file_path = download_individual_with_ytdlp(url, choice)
             if file_path and os.path.exists(file_path):
                 st.success(f"Download available: {file_path}")
                 with open(file_path, "rb") as file:
-                    btn = st.download_button(
+                    st.download_button(
                         label="Download File",
                         data=file,
                         file_name=os.path.basename(file_path),
