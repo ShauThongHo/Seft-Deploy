@@ -82,7 +82,7 @@ def download_playlist_with_ytdlp(url, choice):
                             data=file,
                             file_name=zip_file_name,
                             mime="application/zip",
-                            on_click=clear_input
+                            on_click=lambda: delete_files(downloaded_files + [zip_file_name])
                         )
             else:
                 st.error("No entries found in the playlist.")
@@ -113,6 +113,11 @@ def clear_input():
 
 def keep_active():
     threading.Timer(345600, keep_active).start()
+
+def delete_files(files):
+    for file in files:
+        if os.path.exists(file):
+            os.remove(file)
 
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
 
@@ -148,12 +153,13 @@ if st.button("Download"):
                         data=file,
                         file_name=os.path.basename(file_path),
                         mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                        on_click=clear_input
+                        on_click=lambda: delete_files([file_path])
                     )
             else:
                 st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
         
-if st.button("Clear", on_click=clear_input):
+if st.button("Clear", on_click=lambda: delete_files([st.session_state.url])):
+    clear_input()
     st.stop()
