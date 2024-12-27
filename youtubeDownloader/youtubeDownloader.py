@@ -50,7 +50,6 @@ def download_individual_with_ytdlp(url, choice):
         return None
 
 # Function to download YouTube playlist using yt-dlp
-# Function to download YouTube playlist using yt-dlp
 def download_playlist_with_ytdlp(url, choice):
     ydl_opts = {
         'format': 'bestaudio/best' if choice == 'Audio' else 'bestvideo+bestaudio/best',
@@ -82,6 +81,22 @@ def download_playlist_with_ytdlp(url, choice):
                         st.success(f"Downloaded: {file_name}")
                     else:
                         st.error(f"Failed to download: {entry['title']}")
+                
+                # Create a zip file of all downloaded files
+                if downloaded_files:
+                    zip_file_name = "downloaded_playlist.zip"
+                    with zipfile.ZipFile(zip_file_name, 'w') as zipf:
+                        for file in downloaded_files:
+                            zipf.write(file, os.path.basename(file))
+                    st.success(f"Playlist downloaded and zipped: {zip_file_name}")
+                    with open(zip_file_name, "rb") as file:
+                        btn = st.download_button(
+                            label="Download ZIP",
+                            data=file,
+                            file_name=zip_file_name,
+                            mime="application/zip",
+                            on_click=clear_input
+                        )
             else:
                 st.error("No entries found in the playlist.")
     except yt_dlp.utils.DownloadError as e:
