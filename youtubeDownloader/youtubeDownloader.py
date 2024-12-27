@@ -155,6 +155,7 @@ cookies_file = "cookies.txt"
 download_cookies_from_github(repo_url, cookies_file)
 
 if st.button("Download"):
+    os.system('pip install --upgrade yt-dlp')
     if url:
         if 'radio' in url and 'list' in url:
             st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
