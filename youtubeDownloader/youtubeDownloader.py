@@ -60,7 +60,7 @@ def download_playlist_with_ytdlp(url, choice):
             'preferredquality': '192',
         }] if choice == 'Audio' else [],
         'progress_hooks': [my_hook],
-        'keepvideo': False if choice == 'Audio' else True,
+        'keepvideo': True,
         'noplaylist': False,  # Ensure playlists are not ignored
     }
     
