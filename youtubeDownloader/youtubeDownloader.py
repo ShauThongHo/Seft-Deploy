@@ -178,4 +178,4 @@ if st.button("Download"):
         st.error("Please enter a valid YouTube URL.")
         
 if st.button("Clear", on_click=clear_input):
-    clear_downloaded_files([])
+    clear_downloaded_files([file_path])
