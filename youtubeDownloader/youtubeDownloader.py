@@ -159,6 +159,6 @@ if st.button("Download"):
     else:
         st.error("Please enter a valid YouTube URL.")
         
-if st.button("Clear", on_click=lambda: delete_files([st.session_state.url])):
-    clear_input()
+if st.button("Clear"):
+    on_click=lambda: (clear_input(), delete_files([file_path]))
     st.stop()
