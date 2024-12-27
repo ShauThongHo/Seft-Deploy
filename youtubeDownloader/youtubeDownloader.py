@@ -135,7 +135,7 @@ def keep_active():
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
 
 st.title("YouTube Video/Audio Downloader")
-st.write("**Haven't supported playlist download, please input the video URL directly.**")
+st.write("**This downloader didn't supported playlist 'Mixes' which are playlists YouTube makes for you.**")
 
 if 'url' not in st.session_state:
     st.session_state.url = ""
