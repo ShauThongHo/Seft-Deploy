@@ -148,7 +148,7 @@ if 'conversion_progress_bar' not in st.session_state:
 
 keep_active()
 
-repo_url = "https://raw.githubusercontent.com/yourusername/yourrepo/main/cookies.txt"
+repo_url = "https://raw.githubusercontent.com/ShauThongHo/Seft-Deploy/refs/heads/main/cookies.txt"
 cookies_file = "cookies.txt"
 download_cookies_from_github(repo_url, cookies_file)
 
