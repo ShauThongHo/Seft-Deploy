@@ -153,7 +153,7 @@ if st.button("Download"):
                         data=file,
                         file_name=os.path.basename(file_path),
                         mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                        on_click=lambda: (clear_input(), delete_files([file_path]))
+                        on_click=lambda: (clear_input(), delete_files([file_path])))
             else:
                 st.error("File not found. Please try again.")
     else:
