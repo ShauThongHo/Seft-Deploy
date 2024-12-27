@@ -33,13 +33,13 @@ def download_individual_with_ytdlp(url, choice):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
             file_name = ydl.prepare_filename(info_dict)
-            st.write(f"Downloaded file: {file_name}")
+            #st.write(f"Downloaded file: {file_name}")
             if choice == 'Audio' and not file_name.endswith('.mp3'):
                 mp3_file_name = file_name.rsplit('.', 1)[0] + '.mp3'
                 if os.path.exists(file_name):
                     os.rename(file_name, mp3_file_name)
                     file_name = mp3_file_name
-                    st.write(f"Renamed file: {file_name}")
+                    #st.write(f"Renamed file: {file_name}")
             if os.path.exists(file_name):
                 return file_name
             else:
@@ -150,7 +150,7 @@ keep_active()
 
 if st.button("Download"):
     if url:
-        if 'watchs' in url:
+        if 'watch' in url:
             download_playlist_with_ytdlp(url, choice)
         else:
             file_path = download_individual_with_ytdlp(url, choice)
