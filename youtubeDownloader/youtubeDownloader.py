@@ -134,7 +134,7 @@ keep_active()
 
 if st.button("Download"):
     if url:
-        if 'watchs' in url:  # Remove 's' for playlist
+        if 'list' in url:  # Remove 's' for playlist
             download_playlist_with_ytdlp(url, choice)
         else:
             file_path = download_individual_with_ytdlp(url, choice)
