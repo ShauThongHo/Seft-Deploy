@@ -82,6 +82,7 @@ def download_playlist_with_ytdlp(url, choice):
                             data=file,
                             file_name=zip_file_name,
                             mime="application/zip",
+                            on_click=clear_input
                             on_click=lambda: delete_files(downloaded_files + [zip_file_name])
                         )
             else:
@@ -153,6 +154,7 @@ if st.button("Download"):
                         data=file,
                         file_name=os.path.basename(file_path),
                         mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                        on_click=clear_input
                         on_click=lambda: delete_files([file_path])
                     )
             else:
