@@ -4,15 +4,6 @@ import os
 import threading
 import zipfile
 
-# Function to delete files
-def delete_files(file_paths):
-    for file_path in file_paths:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            st.write(f"Deleted file: {file_path}")
-        else:
-            st.write(f"File not found: {file_path}")
-
 # Function to download individual video or audio using yt-dlp
 def download_individual_with_ytdlp(url, choice):
     if choice == 'Video':
@@ -36,7 +27,7 @@ def download_individual_with_ytdlp(url, choice):
         }
     else:
         st.error("Invalid choice. Please select 'Video' or 'Audio'.")
-        return []
+        return None
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -50,13 +41,13 @@ def download_individual_with_ytdlp(url, choice):
                     file_name = mp3_file_name
                     st.write(f"Renamed file: {file_name}")
             if os.path.exists(file_name):
-                return [file_name]
+                return file_name
             else:
                 st.error("File not found after download.")
-                return []
+                return None
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
-        return []
+        return None
 
 # Function to download YouTube playlist using yt-dlp
 def download_playlist_with_ytdlp(url, choice):
@@ -106,13 +97,10 @@ def download_playlist_with_ytdlp(url, choice):
                             mime="application/zip",
                             on_click=clear_input
                         )
-                    downloaded_files.append(zip_file_name)
             else:
                 st.error("No entries found in the playlist.")
-            return downloaded_files
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
-        return []
 
 def my_hook(d):
     if d['status'] == 'downloading':
@@ -145,7 +133,7 @@ def keep_active():
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
 
 st.title("YouTube Video/Audio Downloader")
-st.write("**Haven't supported playlist download, please input the video URL directly.**")
+st.write("**Haven't supported playlist download,please input the video url directly.")
 
 if 'url' not in st.session_state:
     st.session_state.url = ""
@@ -160,33 +148,26 @@ if 'conversion_progress_bar' not in st.session_state:
 
 keep_active()
 
-downloaded_files = []
-
 if st.button("Download"):
     if url:
         if 'watch' in url:
-            downloaded_files = download_playlist_with_ytdlp(url, choice)
+            download_playlist_with_ytdlp(url, choice)
         else:
-            downloaded_files = download_individual_with_ytdlp(url, choice)
-        
-        if downloaded_files:
-            for file_path in downloaded_files:
-                if os.path.exists(file_path):
-                    st.success(f"Download available: {file_path}")
-                    with open(file_path, "rb") as file:
-                        btn = st.download_button(
-                            label="Download File",
-                            data=file,
-                            file_name=os.path.basename(file_path),
-                            mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                            on_click=clear_input
-                        )
-            delete_files(downloaded_files)
-        else:
-            st.error("File not found. Please try again.")
+            file_path = download_individual_with_ytdlp(url, choice)
+            if file_path and os.path.exists(file_path):
+                st.success(f"Download available: {file_path}")
+                with open(file_path, "rb") as file:
+                    btn = st.download_button(
+                        label="Download File",
+                        data=file,
+                        file_name=os.path.basename(file_path),
+                        mime="audio/mpeg" if choice == "Audio" else "video/mp4",
+                        on_click=clear_input
+                    )
+            else:
+                st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
-
+        
 if st.button("Clear", on_click=clear_input):
-    delete_files(downloaded_files)
     st.stop()
