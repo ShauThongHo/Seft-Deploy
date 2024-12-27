@@ -82,7 +82,7 @@ def download_playlist_with_ytdlp(url, choice):
                             data=file,
                             file_name=zip_file_name,
                             mime="application/zip",
-                            on_click=clear_input
+                            on_click=clear_downloaded_files(downloaded_files + [zip_file_name])
                         )
             else:
                 st.error("No entries found in the playlist.")
@@ -110,6 +110,11 @@ def my_hook(d):
 
 def clear_input():
     st.session_state.url = ""
+
+def clear_downloaded_files(files):
+    for file in files:
+        if os.path.exists(file):
+            os.remove(file)
 
 def keep_active():
     threading.Timer(345600, keep_active).start()
@@ -148,12 +153,12 @@ if st.button("Download"):
                         data=file,
                         file_name=os.path.basename(file_path),
                         mime="audio/mpeg" if choice == "Audio" else "video/mp4",
-                        on_click=clear_input
+                        on_click=clear_downloaded_files([file_path])
                     )
             else:
                 st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
         
-if st.button("Clear", on_click=clear_input):
-    st.stop()
+if st.button("Clear", on_click=lambda: clear_downloaded_files([st.session_state.url])):
+    clear_input()
