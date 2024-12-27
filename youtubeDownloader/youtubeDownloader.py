@@ -134,7 +134,9 @@ keep_active()
 
 if st.button("Download"):
     if url:
-        if 'list' in url:  # Remove 's' for playlist
+        if 'radio' in url:
+            st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
+        elif 'list' in url:  # Remove 's' for playlist
             download_playlist_with_ytdlp(url, choice)
         else:
             file_path = download_individual_with_ytdlp(url, choice)
