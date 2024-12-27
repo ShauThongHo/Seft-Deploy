@@ -11,12 +11,12 @@ def download_cookies_from_github(repo_url, file_path):
     if response.status_code == 200:
         with open(file_path, 'wb') as file:
             file.write(response.content)
-        st.success("Cookies file downloaded successfully.")
+        #st.success("Cookies file downloaded successfully.")
     else:
         st.error("Failed to download cookies file from GitHub.")
 
 # Function to download individual video or audio using yt-dlp
-def download_individual_with_ytdlp(url, choice):
+def download_individual_with_ytdlp(url, choice, cookies_file):
     ydl_opts = {
         'format': 'bestvideo+bestaudio/best' if choice == 'Video' else 'bestaudio/best',
         'outtmpl': '%(title)s.%(ext)s',
@@ -28,6 +28,7 @@ def download_individual_with_ytdlp(url, choice):
         }] if choice == 'Audio' else [],
         'progress_hooks': [my_hook],
         'keepvideo': choice == 'Audio',
+        'cookiefile': cookies_file
     }
     
     try:
@@ -49,7 +50,7 @@ def download_individual_with_ytdlp(url, choice):
         return None
 
 # Function to download YouTube playlist using yt-dlp
-def download_playlist_with_ytdlp(url, choice):
+def download_playlist_with_ytdlp(url, choice, cookies_file):
     ydl_opts = {
         'format': 'bestaudio/best' if choice == 'Audio' else 'bestvideo+bestaudio/best',
         'outtmpl': '%(title)s.%(ext)s',
@@ -61,6 +62,7 @@ def download_playlist_with_ytdlp(url, choice):
         'progress_hooks': [my_hook],
         'keepvideo': choice == 'Audio',
         'noplaylist': False,
+        'cookiefile': cookies_file
     }
     
     try:
@@ -157,9 +159,9 @@ if st.button("Download"):
         if 'radio' in url and 'list' in url:
             st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
         elif 'list' in url:  # Remove 's' for playlist
-            download_playlist_with_ytdlp(url, choice)
+            download_playlist_with_ytdlp(url, choice, cookies_file)
         else:
-            file_path = download_individual_with_ytdlp(url, choice)
+            file_path = download_individual_with_ytdlp(url, choice, cookies_file)
             if file_path and os.path.exists(file_path):
                 st.success(f"Download available: {file_path}")
                 with open(file_path, "rb") as file:
