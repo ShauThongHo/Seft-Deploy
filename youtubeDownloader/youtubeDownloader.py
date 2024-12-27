@@ -106,10 +106,11 @@ def download_playlist_with_ytdlp(url, choice):
                             mime="application/zip",
                             on_click=clear_input
                         )
-                    downloaded_files.append(zip_file_name)
+                    delete_files(downloaded_files)
+                    return [zip_file_name]
             else:
                 st.error("No entries found in the playlist.")
-            return downloaded_files
+            return []
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
         return []
