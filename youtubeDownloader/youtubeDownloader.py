@@ -11,7 +11,7 @@ def download_cookies_from_github(repo_url, file_path):
     if response.status_code == 200:
         with open(file_path, 'wb') as file:
             file.write(response.content)
-        #st.success("Cookies file downloaded successfully.")
+        st.success("Cookies file downloaded successfully.")
     else:
         st.error("Failed to download cookies file from GitHub.")
 
