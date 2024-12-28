@@ -1,6 +1,5 @@
 import streamlit as st
 import yt_dlp
-import pytube
 import os
 import threading
 import zipfile
@@ -48,21 +47,6 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
                 return None
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
-        return download_individual_with_pytube(url, choice)
-
-# Function to download individual video or audio using pytube2
-def download_individual_with_pytube(url, choice):
-    try:
-        yt = pytube.YouTube(url)
-        stream = yt.streams.get_highest_resolution() if choice == 'Video' else yt.streams.filter(only_audio=True).first()
-        file_name = stream.download()
-        if os.path.exists(file_name):
-            return file_name
-        else:
-            st.error("File not found after download.")
-            return None
-    except Exception as e:
-        st.error(f"pytube error: {str(e)}")
         return None
 
 # Function to download YouTube playlist using yt-dlp
@@ -172,7 +156,6 @@ download_cookies_from_github(repo_url, cookies_file)
 
 if st.button("Download"):
     os.system('pip install yt-dlp --upgrade')
-    os.system('pip install pytube --upgrade')
     if url:
         if 'radio' in url and 'list' in url:
             st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
