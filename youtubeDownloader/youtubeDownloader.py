@@ -28,7 +28,7 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
         }] if choice == 'Audio' else [],
         'progress_hooks': [my_hook],
         'keepvideo': choice == 'Audio',
-        
+        'cookiefile': cookies_file
     }
     
     try:
