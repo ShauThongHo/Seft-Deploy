@@ -1,5 +1,6 @@
 import streamlit as st
 import yt_dlp
+import pafy
 import os
 import threading
 import zipfile
@@ -47,6 +48,21 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
                 return None
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
+        return download_individual_with_pafy(url, choice)
+
+# Function to download individual video or audio using pafy
+def download_individual_with_pafy(url, choice):
+    try:
+        video = pafy.new(url)
+        best = video.getbest() if choice == 'Video' else video.getbestaudio()
+        file_name = best.download()
+        if os.path.exists(file_name):
+            return file_name
+        else:
+            st.error("File not found after download.")
+            return None
+    except Exception as e:
+        st.error(f"pafy error: {str(e)}")
         return None
 
 # Function to download YouTube playlist using yt-dlp

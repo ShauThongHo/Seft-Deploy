@@ -5,3 +5,4 @@ pydub
 ffmpeg
 pytube
 youtube-dl
+pafy
