@@ -16,7 +16,7 @@ def download_cookies_from_github(repo_url, file_path):
         st.error("Failed to download cookies file from GitHub.")
 
 # Function to download individual video or audio using yt-dlp
-def download_individual_with_ytdlp(url, choice, cookies_file):
+def download_individual_with_ytdlp(url, choice, cookies_file, proxy_url):
     ydl_opts = {
         'format': 'bestvideo+bestaudio/best' if choice == 'Video' else 'bestaudio/best',
         'outtmpl': '%(title)s.%(ext)s',
@@ -28,9 +28,9 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
         }] if choice == 'Audio' else [],
         'progress_hooks': [my_hook],
         'keepvideo': choice == 'Audio',
-        'cookiefile': cookies_file
+        'cookiefile': cookies_file,
+        'proxy': proxy_url  # Add proxy setting here
     }
-    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=True)
@@ -39,7 +39,7 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
                 mp3_file_name = os.path.splitext(file_name)[0] + '.mp3'
                 if os.path.exists(file_name):
                     os.rename(file_name, mp3_file_name)
-                    file_name = mp3_file_name
+                file_name = mp3_file_name
             if os.path.exists(file_name):
                 return file_name
             else:
@@ -50,7 +50,7 @@ def download_individual_with_ytdlp(url, choice, cookies_file):
         return None
 
 # Function to download YouTube playlist using yt-dlp
-def download_playlist_with_ytdlp(url, choice, cookies_file):
+def download_playlist_with_ytdlp(url, choice, cookies_file, proxy_url):
     ydl_opts = {
         'format': 'bestaudio/best' if choice == 'Audio' else 'bestvideo+bestaudio/best',
         'outtmpl': '%(title)s.%(ext)s',
@@ -62,9 +62,9 @@ def download_playlist_with_ytdlp(url, choice, cookies_file):
         'progress_hooks': [my_hook],
         'keepvideo': choice == 'Audio',
         'noplaylist': False,
-        'cookiefile': cookies_file
+        'cookiefile': cookies_file,
+        'proxy': proxy_url  # Add proxy setting here
     }
-    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             playlist_dict = ydl.extract_info(url, download=True)
@@ -76,13 +76,12 @@ def download_playlist_with_ytdlp(url, choice, cookies_file):
                         mp3_file_name = os.path.splitext(file_name)[0] + '.mp3'
                         if os.path.exists(file_name):
                             os.rename(file_name, mp3_file_name)
-                            file_name = mp3_file_name
+                        file_name = mp3_file_name
                     if os.path.exists(file_name):
                         downloaded_files.append(file_name)
                         st.success(f"Downloaded: {file_name}")
                     else:
                         st.error(f"Failed to download: {entry['title']}")
-                
                 if downloaded_files:
                     zip_file_name = "downloaded_playlist.zip"
                     with zipfile.ZipFile(zip_file_name, 'w') as zipf:
@@ -97,8 +96,8 @@ def download_playlist_with_ytdlp(url, choice, cookies_file):
                             mime="application/zip",
                             on_click=lambda: (clear_input(), clear_downloaded_files(downloaded_files + [zip_file_name]))
                         )
-            else:
-                st.error("No entries found in the playlist.")
+                else:
+                    st.error("No entries found in the playlist.")
     except yt_dlp.utils.DownloadError as e:
         st.error(f"yt-dlp error: {str(e)}")
 
@@ -133,9 +132,8 @@ def keep_active():
     threading.Timer(345600, keep_active).start()
 
 st.set_page_config(page_title="YouTube Downloader", layout="centered")
-
 st.title("YouTube Video/Audio Downloader")
-st.write("**This downloader didn't supported playlist 'Mixes' which are playlists YouTube makes for you.**")
+st.write("**This downloader didn't support playlist 'Mixes' which are playlists YouTube makes for you.**")
 
 if 'url' not in st.session_state:
     st.session_state.url = ""
@@ -159,10 +157,11 @@ if st.button("Download"):
     if url:
         if 'radio' in url and 'list' in url:
             st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
-        elif 'list' in url:  # Remove 's' for playlist
-            download_playlist_with_ytdlp(url, choice, cookies_file)
+        elif 'list' in url:
+            # Remove 's' for playlist
+            download_playlist_with_ytdlp(url, choice, cookies_file, proxy_url="http://your_proxy_url:port")
         else:
-            file_path = download_individual_with_ytdlp(url, choice, cookies_file)
+            file_path = download_individual_with_ytdlp(url, choice, cookies_file, proxy_url="http://your_proxy_url:port")
             if file_path and os.path.exists(file_path):
                 st.success(f"Download available: {file_path}")
                 with open(file_path, "rb") as file:
@@ -177,6 +176,6 @@ if st.button("Download"):
                 st.error("File not found. Please try again.")
     else:
         st.error("Please enter a valid YouTube URL.")
-        
+
 if st.button("Clear", on_click=clear_input):
     clear_downloaded_files([])
