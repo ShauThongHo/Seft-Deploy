@@ -159,9 +159,9 @@ if st.button("Download"):
             st.error("This downloader doesn't support 'Mixes' which are playlists YouTube makes for you.")
         elif 'list' in url:
             # Remove 's' for playlist
-            download_playlist_with_ytdlp(url, choice, cookies_file, proxy_url="http://your_proxy_url:port")
+            download_playlist_with_ytdlp(url, choice, cookies_file, proxy_url="http://croxyproxy.com")
         else:
-            file_path = download_individual_with_ytdlp(url, choice, cookies_file, proxy_url="http://your_proxy_url:port")
+            file_path = download_individual_with_ytdlp(url, choice, cookies_file, proxy_url="http://croxyproxy.com")
             if file_path and os.path.exists(file_path):
                 st.success(f"Download available: {file_path}")
                 with open(file_path, "rb") as file:
