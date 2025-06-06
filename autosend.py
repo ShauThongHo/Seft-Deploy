@@ -1,25 +1,12 @@
-import pyautogui
 import time
+import requests
 
-# 等待微信打开
-time.sleep(5)
+BOT_TOKEN = '你的Bot Token'
+CHAT_ID = '目标聊天ID'
+MESSAGE = '你好，这是测试消息'
 
-# 打开微信窗口
-pyautogui.hotkey('win', 's')
-time.sleep(0.5)
-pyautogui.typewrite('WeChat')
-time.sleep(0.5)
-pyautogui.press('enter')
-
-# 等待微信启动
-time.sleep(5)
-
-# 选择联系人
-#pyautogui.typewrite('乄神龙殿乄')
-#time.sleep(0.5)
-#pyautogui.press('enter')
-
-# 输入消息
-pyautogui.typewrite('Hello, this is a scheduled message!')
-time.sleep(0.5)
-pyautogui.press('enter')
+for i in range(10):  # 每秒发送一条，共发送10条
+    url = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+    data = {'chat_id': CHAT_ID, 'text': f'{MESSAGE} #{i+1}'}
+    requests.post(url, data=data)
+    time.sleep(1)  # 每秒发送一次
