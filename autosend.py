@@ -1,7 +1,7 @@
 import time
 import requests
 
-BOT_TOKEN = '你的Bot Token'
+BOT_TOKEN = '8011591768:AAGFrGTX0R83wtP3-T__mi4ZXRpobYAlESw'
 CHAT_ID = '目标聊天ID'
 MESSAGE = '你好，这是测试消息'
 
