@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  youtube-converter:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./downloads:/tmp/youtube_conversions
+    environment:
+      - FLASK_ENV=production
+      - MAX_FILE_AGE=3600
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - youtube-converter
+    restart: unless-stopped
+
+volumes:
+  downloads:
