@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "SimpleStockAnalyzer",
+            "request": "launch",
+            "mainClass": "SimpleStockAnalyzer",
+            "projectName": "Seft-Deploy_52af5528"
+        },
+        {
+            "type": "java",
+            "name": "OKXWebSocketClient",
+            "request": "launch",
+            "mainClass": "OKXWebSocketClient",
+            "projectName": "Seft-Deploy_52af5528"
+        },
+        {
+            "type": "java",
             "name": "youtubeConvertMP3",
             "request": "launch",
             "mainClass": "youtubeDownloader.youtubeConvertMP3",
