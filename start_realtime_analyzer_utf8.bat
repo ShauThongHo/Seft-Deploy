@@ -66,9 +66,10 @@ if errorlevel 1 (
 )
 
 echo.
-echo �🔥 正在启动实时K线分析器...
+echo 🔥 正在启动实时K线分析器...
 echo 💡 提示: 程序启动后点击"开始实时分析"开始接收实时数据
 echo 🔍 如遇连接问题，请点击"详情"按钮查看连接状态
+echo 💬 新功能: 可在界面右侧选择数据量 300/1000/2000
 echo ⚠️  网络提示: 需要稳定的网络连接以确保实时数据接收
 echo ⚠️  风险提示: 实时信号仅供参考，请结合多种分析方法谨慎决策！
 echo.
@@ -95,7 +96,7 @@ if errorlevel 1 (
     echo    允许Python程序访问网络
     echo    添加程序到防火墙白名单
     echo.
-    echo � OKX服务问题:
+    echo 📡 OKX服务问题:
     echo    1. OKX可能正在维护
     echo    2. 尝试稍后重试
     echo    3. 检查OKX官方公告

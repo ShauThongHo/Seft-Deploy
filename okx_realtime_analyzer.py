@@ -45,6 +45,9 @@ import logging
 from typing import Dict, List, Tuple, Optional
 import warnings
 
+# 导入交易模块
+from okx_trading_api import OKXTradingAPI
+
 # 忽略matplotlib警告
 warnings.filterwarnings('ignore', category=UserWarning)
 
@@ -363,6 +366,7 @@ class OKXRealTimeAnalyzer:
         # 数据存储
         self.df = pd.DataFrame()
         self.max_data_points = 300  # 默认最大数据点数，可以通过界面修改
+        self.instrument_id = "BTC-USDT"  # 默认交易对
         
         # 实时数据源
         self.data_feed = None
@@ -380,6 +384,16 @@ class OKXRealTimeAnalyzer:
         self.buy_signals = []
         self.sell_signals = []
         self.hold_periods = []
+        
+        # 交易API初始化
+        try:
+            self.trading_api = OKXTradingAPI()
+            self.trading_enabled = False  # 默认禁用交易，需要用户手动启用
+            logger.info("Trading API initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize trading API: {e}")
+            self.trading_api = None
+            self.trading_enabled = False
         
         self.setup_ui()
         self.setup_chart()
@@ -458,7 +472,30 @@ class OKXRealTimeAnalyzer:
         data_points_combo.pack(side=tk.LEFT, padx=(0, 5))
         data_points_combo.bind('<<ComboboxSelected>>', self.on_data_points_changed)
         
-        ttk.Label(row2_frame, text="个数据点").pack(side=tk.LEFT)
+        ttk.Label(row2_frame, text="个数据点").pack(side=tk.LEFT, padx=(0, 20))
+        
+        # 交易控制面板
+        trading_frame = ttk.LabelFrame(row2_frame, text="交易控制", padding="5")
+        trading_frame.pack(side=tk.LEFT, padx=(0, 10))
+        
+        # 交易开关
+        self.trading_enabled_var = tk.BooleanVar(value=False)
+        trading_check = ttk.Checkbutton(
+            trading_frame, 
+            text="启用实盘交易", 
+            variable=self.trading_enabled_var,
+            command=self.toggle_trading
+        )
+        trading_check.pack(side=tk.LEFT, padx=(0, 10))
+        
+        # 交易状态指示
+        self.trading_indicator_var = tk.StringVar(value="🔴 交易关闭")
+        trading_indicator = ttk.Label(
+            trading_frame, 
+            textvariable=self.trading_indicator_var,
+            font=("Arial", 10, "bold")
+        )
+        trading_indicator.pack(side=tk.LEFT)
         
         # 实时信息显示
         info_frame = ttk.LabelFrame(row2_frame, text="实时信息", padding="5")
@@ -525,6 +562,36 @@ class OKXRealTimeAnalyzer:
         self.zlmm_signal_var = tk.StringVar(value="⚪")
         self.zlmm_signal_label = ttk.Label(zlmm_frame, textvariable=self.zlmm_signal_var, font=("Arial", 24))
         self.zlmm_signal_label.pack()
+        
+        # 交易状态面板（右下）
+        trading_status_frame = ttk.LabelFrame(right_frame, text="交易状态", padding="10")
+        trading_status_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        
+        # 交易状态显示（滚动文本）
+        status_text_frame = ttk.Frame(trading_status_frame)
+        status_text_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 创建文本显示区域
+        self.trading_status_label = tk.Label(
+            status_text_frame,
+            text="交易状态:\n等待交易信号...",
+            justify=tk.LEFT,
+            anchor="nw",
+            wraplength=280,
+            bg='#f0f0f0',
+            font=("Consolas", 9)
+        )
+        self.trading_status_label.pack(fill=tk.BOTH, expand=True)
+        
+        # 交易统计信息
+        stats_frame = ttk.Frame(trading_status_frame)
+        stats_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        self.position_var = tk.StringVar(value="持仓: 无")
+        ttk.Label(stats_frame, textvariable=self.position_var, font=("Arial", 10)).pack(anchor=tk.W)
+        
+        self.trades_var = tk.StringVar(value="今日交易: 0/5")
+        ttk.Label(stats_frame, textvariable=self.trades_var, font=("Arial", 10)).pack(anchor=tk.W)
         
         # 图表容器（左下）
         self.chart_frame = ttk.LabelFrame(left_frame, text="实时K线图表", padding="5")
@@ -642,54 +709,151 @@ class OKXRealTimeAnalyzer:
             self.sell_signals = []
             
             for i in range(30, len(self.df)):
-                # 买入信号条件（6个指标同时确认）
-                buy_conditions = [
-                    # MACD金叉且在零轴上方
-                    (self.df.iloc[i]['macd'] > self.df.iloc[i]['signal'] and 
-                     self.df.iloc[i-1]['macd'] <= self.df.iloc[i-1]['signal'] and
-                     self.df.iloc[i]['macd'] > 0),
-                    
-                    # KDJ指标：K>D且未超买，或从超卖区向上
-                    (self.df.iloc[i]['k'] > self.df.iloc[i]['d'] and 
-                     (self.df.iloc[i]['k'] < 80 or self.df.iloc[i-5]['k'] < 20)),
-                    
-                    # RSI > 50或从超卖区回升
-                    (self.df.iloc[i]['rsi'] > 50 or 
-                     (self.df.iloc[i]['rsi'] > 30 and self.df.iloc[i-5]['rsi'] < 30)),
-                    
-                    # Williams %R > -50或从超卖区向上
-                    (self.df.iloc[i]['williams_r'] > -50 or 
-                     (self.df.iloc[i]['williams_r'] > -80 and self.df.iloc[i-5]['williams_r'] < -80)),
-                    
-                    # 价格在BBI上方
-                    self.df.iloc[i]['close'] > self.df.iloc[i]['bbi'],
-                    
-                    # ZLMM动量为正值
-                    self.df.iloc[i]['zlmm'] > 0
-                ]
+                # 使用灵活信号检测系统
+                if not hasattr(self, 'signal_detector'):
+                    from flexible_signal_detector import FlexibleSignalDetector
+                    self.signal_detector = FlexibleSignalDetector("trading_config.json")
                 
-                if all(buy_conditions):
+                # 检测买入信号
+                should_buy, buy_strength, buy_conditions = self.signal_detector.detect_buy_signals(self.df, i)
+                
+                if should_buy:
                     self.buy_signals.append(i)
+                    
+                    # 如果是最新数据点且启用了交易，执行买入
+                    if i == len(self.df) - 1 and self.trading_enabled and self.trading_api:
+                        current_price = self.df.iloc[i]['close']
+                        signal_description = self.signal_detector.get_signal_description('买入', buy_strength, buy_conditions)
+                        
+                        # 在日志中记录信号详情
+                        logger.info(f"🟢 {signal_description}")
+                        
+                        threading.Thread(
+                            target=self._execute_buy_trade,
+                            args=(current_price, buy_strength, signal_description),
+                            daemon=True
+                        ).start()
                 
-                # 卖出信号条件（4个以上条件满足）
-                sell_conditions = [
-                    self.df.iloc[i]['rsi'] > 70,  # RSI超买
-                    self.df.iloc[i]['k'] > 80 and self.df.iloc[i]['d'] > 80,  # KDJ超买
-                    self.df.iloc[i]['williams_r'] > -20,  # Williams超买
-                    (self.df.iloc[i]['macd'] < self.df.iloc[i]['signal'] and 
-                     self.df.iloc[i-1]['macd'] >= self.df.iloc[i-1]['signal']),  # MACD死叉
-                    abs(self.df.iloc[i]['close'] - self.df.iloc[i]['bbi']) / self.df.iloc[i]['bbi'] > 0.05,  # 价格偏离BBI
-                    self.df.iloc[i]['zlmm'] < 0  # 动量转负
-                ]
+                # 检测卖出信号
+                should_sell, sell_strength, sell_conditions = self.signal_detector.detect_sell_signals(self.df, i)
                 
-                if sum(sell_conditions) >= 4:
+                if should_sell:
                     self.sell_signals.append(i)
+                    
+                    # 如果是最新数据点且启用了交易，执行卖出
+                    if i == len(self.df) - 1 and self.trading_enabled and self.trading_api:
+                        current_price = self.df.iloc[i]['close']
+                        signal_description = self.signal_detector.get_signal_description('卖出', sell_strength, sell_conditions)
+                        
+                        # 在日志中记录信号详情
+                        logger.info(f"🔴 {signal_description}")
+                        
+                        threading.Thread(
+                            target=self._execute_sell_trade,
+                            args=(current_price, sell_strength, signal_description),
+                            daemon=True
+                        ).start()
             
             # 计算持有期间
             self.calculate_hold_periods()
             
         except Exception as e:
             logger.error(f"Error detecting signals: {e}")
+    
+    def _execute_buy_trade(self, current_price: float, signal_strength: int, signal_description: str = ""):
+        """执行买入交易（在独立线程中运行）"""
+        try:
+            if not self.trading_api or not self.trading_enabled:
+                return
+                
+            result = self.trading_api.buy_signal_triggered(
+                self.instrument_id, 
+                current_price, 
+                signal_strength
+            )
+            
+            if result.get('success'):
+                # 在主线程中更新UI
+                message = f"🟢 买入成功: {signal_description} | {result.get('message', '')}"
+                self.root.after(0, lambda: self._update_trading_status(message))
+                logger.info(f"Buy trade executed: {result}")
+            else:
+                message = f"🔴 买入失败: {signal_description} | {result.get('message', '')}"
+                self.root.after(0, lambda: self._update_trading_status(message))
+                logger.warning(f"Buy trade failed: {result}")
+                
+        except Exception as e:
+            logger.error(f"Error executing buy trade: {e}")
+            self.root.after(0, lambda: self._update_trading_status(
+                f"❌ 买入错误: {str(e)}"
+            ))
+    
+    def _execute_sell_trade(self, current_price: float, signal_strength: int, signal_description: str = ""):
+        """执行卖出交易（在独立线程中运行）"""
+        try:
+            if not self.trading_api or not self.trading_enabled:
+                return
+                
+            result = self.trading_api.sell_signal_triggered(
+                self.instrument_id, 
+                current_price, 
+                signal_strength
+            )
+            
+            if result.get('success'):
+                profit_info = ""
+                if 'profit_percent' in result:
+                    profit_info = f" (盈利: {result['profit_percent']:.2f}%)"
+                
+                message = f"🟢 卖出成功: {signal_description} | {result.get('message', '')}{profit_info}"
+                self.root.after(0, lambda: self._update_trading_status(message))
+                logger.info(f"Sell trade executed: {result}")
+            else:
+                message = f"🔴 卖出失败: {signal_description} | {result.get('message', '')}"
+                self.root.after(0, lambda: self._update_trading_status(message))
+                logger.warning(f"Sell trade failed: {result}")
+                
+        except Exception as e:
+            logger.error(f"Error executing sell trade: {e}")
+            self.root.after(0, lambda: self._update_trading_status(
+                f"❌ 卖出错误: {str(e)}"
+            ))
+    
+    def _check_stop_loss_take_profit(self):
+        """检查止损止盈（定期调用）"""
+        try:
+            if not self.trading_api or not self.trading_enabled or len(self.df) == 0:
+                return
+                
+            current_price = self.df.iloc[-1]['close']
+            result = self.trading_api.check_stop_loss_take_profit(
+                self.instrument_id, 
+                current_price
+            )
+            
+            if result and result.get('success'):
+                profit_info = ""
+                if 'profit_percent' in result:
+                    profit_info = f" (盈利: {result['profit_percent']:.2f}%)"
+                    
+                self.root.after(0, lambda: self._update_trading_status(
+                    f"🎯 止盈止损: {result.get('message', '')}{profit_info}"
+                ))
+                logger.info(f"Stop loss/take profit executed: {result}")
+                
+        except Exception as e:
+            logger.error(f"Error checking stop loss/take profit: {e}")
+    
+    def _update_trading_status(self, message: str):
+        """更新交易状态显示"""
+        if hasattr(self, 'trading_status_label'):
+            # 保留最近10条消息
+            current_text = self.trading_status_label.cget('text')
+            messages = current_text.split('\n') if current_text else []
+            messages.append(f"{datetime.now().strftime('%H:%M:%S')} {message}")
+            messages = messages[-10:]  # 只保留最近10条
+            
+            self.trading_status_label.config(text='\n'.join(messages))
     
     def calculate_hold_periods(self):
         """计算持有期间"""
@@ -1253,6 +1417,9 @@ class OKXRealTimeAnalyzer:
             symbol = self.symbol_var.get()
             interval = self.interval_var.get()
             
+            # 更新当前交易对
+            self.instrument_id = symbol
+            
             # 连接诊断
             self.status_var.set("🔍 连接诊断...")
             self.big_status_var.set("🔍 正在诊断连接...")
@@ -1501,6 +1668,80 @@ class OKXRealTimeAnalyzer:
             # 重置为之前的值
             self.data_points_var.set(str(self.max_data_points))
     
+    def toggle_trading(self):
+        """切换交易状态"""
+        if not self.trading_api:
+            messagebox.showerror("错误", "交易API未初始化！请检查配置文件。")
+            self.trading_enabled_var.set(False)
+            return
+            
+        if self.trading_enabled_var.get():
+            # 启用交易前的确认对话框
+            result = messagebox.askyesno(
+                "确认启用交易",
+                "⚠️ 警告：您即将启用实盘交易功能！\n\n"
+                "请确认:\n"
+                "✓ 已正确配置API密钥\n"
+                "✓ 了解交易风险\n"
+                "✓ 设置了合理的交易参数\n"
+                "✓ 账户有足够的资金\n\n"
+                "是否继续启用实盘交易？",
+                icon="warning"
+            )
+            
+            if result:
+                self.trading_enabled = True
+                self.trading_api.enable_trading()
+                self.trading_indicator_var.set("🟢 交易开启")
+                self._update_trading_status("🟢 实盘交易已启用")
+                logger.info("🟢 Trading enabled by user")
+            else:
+                self.trading_enabled_var.set(False)
+        else:
+            self.trading_enabled = False
+            self.trading_api.disable_trading()
+            self.trading_indicator_var.set("🔴 交易关闭")
+            self._update_trading_status("🔴 实盘交易已关闭")
+            logger.info("🔴 Trading disabled by user")
+    
+    def update_trading_stats(self):
+        """更新交易统计信息"""
+        if not self.trading_api:
+            return
+            
+        try:
+            # 获取交易状态
+            status = self.trading_api.get_trading_status()
+            
+            # 更新持仓信息
+            if status['open_positions'] > 0:
+                positions = ', '.join(status['positions'])
+                self.position_var.set(f"持仓: {positions}")
+            else:
+                self.position_var.set("持仓: 无")
+            
+            # 更新交易次数
+            trades_text = f"今日交易: {status['daily_trades']}/{status['max_trades_per_day']}"
+            self.trades_var.set(trades_text)
+            
+        except Exception as e:
+            logger.error(f"Error updating trading stats: {e}")
+    
+    def periodic_trading_check(self):
+        """定期检查交易状态（止损止盈等）"""
+        if self.trading_enabled and self.trading_api:
+            # 检查止损止盈
+            threading.Thread(
+                target=self._check_stop_loss_take_profit,
+                daemon=True
+            ).start()
+            
+            # 更新交易统计
+            self.update_trading_stats()
+        
+        # 每30秒检查一次
+        self.root.after(30000, self.periodic_trading_check)
+    
     def show_connection_details(self):
         """显示连接详细信息"""
         details = []
@@ -1545,6 +1786,9 @@ class OKXRealTimeAnalyzer:
     def run(self):
         """运行程序"""
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+        # 启动定期交易检查
+        self.root.after(5000, self.periodic_trading_check)  # 5秒后开始定期检查
         
         # 确保窗口显示和获得焦点
         self.root.deiconify()
