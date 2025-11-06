@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.invoice.controller.MainController"
+            stylesheets="@../css/style.css">
+    
+    <!-- Top header -->
+    <top>
+        <VBox styleClass="header">
+            <Label text="Receipt Generator" styleClass="title">
+                <font>
+                    <Font name="System Bold" size="28"/>
+                </font>
+            </Label>
+            <Label text="Receipt Generator - Professional receipt tool" styleClass="subtitle">
+                <font>
+                    <Font size="14"/>
+                </font>
+            </Label>
+        </VBox>
+    </top>
+
+    <!-- 主内容区 -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
+            
+            <!-- Single Generate (combined) -->
+            <Tab text="Single Generate">
+                <HBox spacing="20" styleClass="form-container">
+                    <!-- Left: Customer & Items -->
+                    <VBox spacing="15" HBox.hgrow="ALWAYS">
+                        <!-- Receipt info -->
+                        <HBox spacing="20">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Receipt Number *" styleClass="field-label"/>
+                                <TextField fx:id="invoiceNumberField" promptText="e.g.: INV-20251103-1200-0001"/>
+                            </VBox>
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <Label text="Receipt Date *" styleClass="field-label"/>
+                                <DatePicker fx:id="invoiceDatePicker" promptText="Select date" maxWidth="Infinity"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Customer Information -->
+                        <VBox spacing="10" styleClass="add-item-box">
+                            <Label text="Customer Information" styleClass="section-title">
+                                <font>
+                                    <Font name="System Bold" size="14"/>
+                                </font>
+                            </Label>
+                            <HBox spacing="20">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Full Name" styleClass="field-label"/>
+                                    <TextField fx:id="buyerNameField" promptText="Enter full name"/>
+                                </VBox>
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Email Address" styleClass="field-label"/>
+                                    <TextField fx:id="buyerEmailField" promptText="Enter email address"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="20">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="ID Number" styleClass="field-label"/>
+                                    <TextField fx:id="buyerTaxIdField" promptText="Enter ID number"/>
+                                </VBox>
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Phone" styleClass="field-label"/>
+                                    <TextField fx:id="buyerPhoneField" promptText="optional"/>
+                                </VBox>
+                            </HBox>
+                            <VBox spacing="5">
+                                <Label text="Notes" styleClass="field-label"/>
+                                <TextArea fx:id="notesArea" promptText="Optional notes..." prefRowCount="3"/>
+                            </VBox>
+                        </VBox>
+
+                        <!-- Add Item form -->
+                        <VBox spacing="10" styleClass="add-item-box">
+                            <Label text="Add Item" styleClass="section-title">
+                                <font>
+                                    <Font name="System Bold" size="14"/>
+                                </font>
+                            </Label>
+                            <HBox spacing="10">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Item Name *" styleClass="field-label"/>
+                                    <TextField fx:id="itemNameField" promptText="e.g.: University T-Shirt"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="Quantity *" styleClass="field-label"/>
+                                    <TextField fx:id="itemQuantityField" promptText="1" prefWidth="80"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Price (RM) *" styleClass="field-label"/>
+                                    <TextField fx:id="itemPriceField" promptText="20.00"/>
+                                </VBox>
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Tax Rate (%)" styleClass="field-label"/>
+                                    <TextField fx:id="itemTaxRateField" promptText="0.0"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10">
+                                <Button text="Add Item" onAction="#handleAddItem" styleClass="btn-add"/>
+                                <Button text="Remove Selected" onAction="#handleRemoveItem" styleClass="btn-remove"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Items list -->
+                        <VBox spacing="10" VBox.vgrow="ALWAYS">
+                            <Label text="Selected Items" styleClass="section-title">
+                                <font>
+                                    <Font name="System Bold" size="14"/>
+                                </font>
+                            </Label>
+                            <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="nameColumn" text="Name" prefWidth="200"/>
+                                    <TableColumn fx:id="quantityColumn" text="Qty" prefWidth="80"/>
+                                    <TableColumn fx:id="priceColumn" text="Unit Price" prefWidth="100"/>
+                                    <TableColumn fx:id="taxRateColumn" text="Tax (%)" prefWidth="80"/>
+                                    <TableColumn fx:id="subtotalColumn" text="Subtotal" prefWidth="100"/>
+                                    <TableColumn fx:id="totalColumn" text="Total" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+
+                        <!-- Totals -->
+                        <VBox spacing="5" styleClass="totals-box">
+                            <HBox spacing="20">
+                                <Label text="Subtotal:" styleClass="total-label"/>
+                                <Label fx:id="subtotalLabel" text="RM0.00" styleClass="total-value"/>
+                            </HBox>
+                            <HBox spacing="20">
+                                <Label text="Tax:" styleClass="total-label"/>
+                                <Label fx:id="taxLabel" text="RM0.00" styleClass="total-value"/>
+                            </HBox>
+                            <Separator/>
+                            <HBox spacing="20">
+                                <Label text="Total:" styleClass="total-label-grand">
+                                    <font>
+                                        <Font name="System Bold" size="16"/>
+                                    </font>
+                                </Label>
+                                <Label fx:id="totalLabel" text="RM0.00" styleClass="total-value-grand">
+                                    <font>
+                                        <Font name="System Bold" size="16"/>
+                                    </font>
+                                </Label>
+                            </HBox>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <CheckBox fx:id="paidCheckBox" text="Mark as Paid" selected="true" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Right: Preview & action -->
+                    <VBox spacing="15" prefWidth="360">
+                        <Label text="Receipt Preview" styleClass="section-title"/>
+                        <VBox spacing="10" style="-fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-background-color: #f8fafc;" prefHeight="260" alignment="CENTER">
+                            <Label text="Preview will appear here"/>
+                        </VBox>
+                        <Button text="Generate Receipt" onAction="#handleGeneratePDF" styleClass="btn-primary"/>
+                        <HBox spacing="10">
+                            <Button text="Load Sample" onAction="#handleLoadSample" styleClass="btn-secondary"/>
+                            <Button text="Clear Form" onAction="#handleClearForm" styleClass="btn-clear"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </Tab>
+
+            <!-- Bulk Generate tab (2) -->
+            <Tab text="Bulk Generate">
+                <VBox spacing="12" styleClass="form-container">
+                    <Label text="Bulk Buyers" styleClass="section-title">
+                        <font>
+                            <Font name="System Bold" size="14"/>
+                        </font>
+                    </Label>
+                    <HBox spacing="10">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Names (one per line)" styleClass="field-label"/>
+                            <TextArea fx:id="bulkNamesArea" promptText="John Doe\nJane Smith" prefRowCount="4"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="IDs (one per line)" styleClass="field-label"/>
+                            <TextArea fx:id="bulkIdsArea" promptText="S12345\nS12346" prefRowCount="4" prefWidth="140"/>
+                        </VBox>
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Emails (one per line)" styleClass="field-label"/>
+                            <TextArea fx:id="bulkEmailsArea" promptText="john@example.com\njane@example.com" prefRowCount="4"/>
+                        </VBox>
+                    </HBox>
+                    <TableView fx:id="bulkTable" prefHeight="220">
+                        <columns>
+                            <TableColumn fx:id="bulkNameColumn" text="Name" prefWidth="220"/>
+                            <TableColumn fx:id="bulkIdColumn" text="ID" prefWidth="140"/>
+                            <TableColumn fx:id="bulkEmailColumn" text="Email" prefWidth="220"/>
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <VBox spacing="5">
+                            <Label text="Name" styleClass="field-label"/>
+                            <TextField fx:id="bulkNameField" promptText="Buyer name" prefWidth="220"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="ID" styleClass="field-label"/>
+                            <TextField fx:id="bulkIdField" promptText="ID / Student No." prefWidth="140"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="Email" styleClass="field-label"/>
+                            <TextField fx:id="bulkEmailField" promptText="email@example.com" prefWidth="220"/>
+                        </VBox>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Button text="Paste &amp; Add" onAction="#handlePasteBulk" styleClass="btn-add"/>
+                        <Button text="Add Row" onAction="#handleAddBulkRow" styleClass="btn-add"/>
+                        <Button text="Remove Selected" onAction="#handleRemoveBulkRow" styleClass="btn-remove"/>
+                        <Button text="Generate for All" onAction="#handleBulkGenerate" styleClass="btn-primary"/>
+                        <Button text="Clear List" onAction="#handleClearBulkList" styleClass="btn-clear"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- Seller Info tab (3) -->
+            <Tab text="Seller Info">
+                <VBox spacing="15" styleClass="form-container">
+                    <VBox spacing="5">
+                        <Label text="Company/Organization Name *" styleClass="field-label"/>
+                        <TextField fx:id="sellerNameField" promptText="e.g.: SUC Computer Science Society"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Address" styleClass="field-label"/>
+                        <TextField fx:id="sellerAddressField" promptText="e.g.: Southern University College"/>
+                    </VBox>
+                    <HBox spacing="20">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Tax / Registration ID" styleClass="field-label"/>
+                            <TextField fx:id="sellerTaxIdField" promptText="optional"/>
+                        </VBox>
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Phone" styleClass="field-label"/>
+                            <TextField fx:id="sellerPhoneField" promptText="e.g.: +60-3-12345678"/>
+                        </VBox>
+                    </HBox>
+                    <VBox spacing="5">
+                        <Label text="Email *" styleClass="field-label"/>
+                        <TextField fx:id="sellerEmailField" promptText="e.g.: society@example.com"/>
+                    </VBox>
+                    <HBox spacing="10">
+                        <Button text="Save as Defaults" onAction="#handleSaveDefaults" styleClass="btn-secondary"/>
+                        <Button text="Load Defaults" onAction="#handleLoadDefaults" styleClass="btn-secondary"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- Sales Items tab (4) -->
+            <Tab text="Sales Items">
+                <VBox spacing="12" styleClass="form-container">
+                    <Label text="Sales Items Management" styleClass="section-title"/>
+                    <Label text="Tip: You can add frequently used products here in the future. (UI placeholder)"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <!-- Bottom action buttons removed; actions are inside the right preview column -->
+    <bottom/>
+</BorderPane>

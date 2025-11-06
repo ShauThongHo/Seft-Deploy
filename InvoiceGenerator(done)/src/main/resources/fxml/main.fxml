@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.invoice.controller.MainController"
+            stylesheets="@../css/style.css">
+    
+    <!-- Left Sidebar Navigation -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="260" spacing="0">
+            <!-- Logo Section -->
+            <VBox styleClass="sidebar-header" spacing="8">
+                <Label text="Society" styleClass="logo-text">
+                    <font><Font name="System Bold" size="20"/></font>
+                </Label>
+                <Label text="Receipt Generator" styleClass="logo-text">
+                    <font><Font name="System Bold" size="20"/></font>
+                </Label>
+                <Label text="Southern University College" styleClass="logo-subtitle"/>
+            </VBox>
+            
+            <!-- Navigation Menu -->
+            <VBox styleClass="nav-menu" spacing="4" VBox.vgrow="ALWAYS">
+                <Button text="📄 Generate" fx:id="navGenerate" onAction="#handleNavGenerate" styleClass="sidebar-btn sidebar-btn-active"/>
+                <Button text="📊 Seller Info" fx:id="navSellerInfo" onAction="#handleNavSellerInfo" styleClass="sidebar-btn"/>
+                <Button text="🛒 Sales Items" fx:id="navSalesItems" onAction="#handleNavSalesItems" styleClass="sidebar-btn"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Main Content Area -->
+    <center>
+        <StackPane fx:id="contentStack" styleClass="main-content">
+            <!-- Page 1: Generate (Single & Bulk modes) -->
+            <VBox fx:id="pageGenerate" spacing="0" styleClass="content-page">
+                
+                <!-- Page Header -->
+                <HBox styleClass="page-header" alignment="CENTER_LEFT" spacing="15">
+                    <Label text="Generate Receipt" styleClass="page-title">
+                        <font><Font name="System Bold" size="24"/></font>
+                    </Label>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <!-- Mode Toggle -->
+                    <HBox styleClass="toggle-container" spacing="0">
+                        <Button text="Single" fx:id="modeButtonSingle" onAction="#handleModeSingle" styleClass="toggle-btn toggle-btn-left toggle-btn-active" prefWidth="100"/>
+                        <Button text="Bulk" fx:id="modeButtonBulk" onAction="#handleModeBulk" styleClass="toggle-btn toggle-btn-right" prefWidth="100"/>
+                    </HBox>
+                </HBox>
+                
+                <!-- Mode Content -->
+                <ScrollPane fitToWidth="true" styleClass="content-scroll" VBox.vgrow="ALWAYS">
+                    <StackPane fx:id="modeStack">
+                        
+                        <!-- Single Generate Mode -->
+                        <VBox fx:id="modeSingle" spacing="20" styleClass="mode-content">
+                            
+                            <!-- Customer Information Card -->
+                            <VBox styleClass="card" spacing="16">
+                                <Label text="Customer Information" styleClass="card-title">
+                                    <font><Font name="System Bold" size="16"/></font>
+                                </Label>
+                                
+                                <GridPane hgap="16" vgap="12">
+                                    <columnConstraints>
+                                        <ColumnConstraints percentWidth="33"/>
+                                        <ColumnConstraints percentWidth="33"/>
+                                        <ColumnConstraints percentWidth="34"/>
+                                    </columnConstraints>
+                                    
+                                    <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                        <Label text="Full Name" styleClass="input-label"/>
+                                        <TextField fx:id="buyerNameField" promptText="Micage Ho" styleClass="input-field"/>
+                                    </VBox>
+                                    <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                        <Label text="ID Number" styleClass="input-label"/>
+                                        <TextField fx:id="buyerTaxIdField" promptText="B123456A" styleClass="input-field"/>
+                                    </VBox>
+                                    <VBox spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                        <Label text="Email Address" styleClass="input-label"/>
+                                        <TextField fx:id="buyerEmailField" promptText="B123456A@sc.edu.my" styleClass="input-field"/>
+                                    </VBox>
+                                </GridPane>
+                            </VBox>
+
+                            <!-- Items Selection Card -->
+                            <VBox styleClass="card" spacing="16">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label text="Selected Items" styleClass="card-title">
+                                        <font><Font name="System Bold" size="16"/></font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="Delete Selected" styleClass="btn-danger-sm" onAction="#handleRemoveItem"/>
+                                    <Button text="+ Add Item" styleClass="btn-add" onAction="#handleAddItemToInvoice"/>
+                                </HBox>
+                                
+                                <TableView fx:id="singleItemsTable" styleClass="modern-table" prefHeight="250" minHeight="250" maxHeight="250">
+                                    <columns>
+                                        <TableColumn fx:id="singleNameColumn" text="Item" prefWidth="200"/>
+                                        <TableColumn fx:id="singleQuantityColumn" text="Qty" prefWidth="80"/>
+                                        <TableColumn fx:id="singlePriceColumn" text="Price" prefWidth="100"/>
+                                        <TableColumn fx:id="singleTotalColumn" text="Total" prefWidth="120"/>
+                                    </columns>
+                                </TableView>
+                                
+                                <!-- Total Summary -->
+                                <HBox styleClass="total-summary" alignment="CENTER_RIGHT" spacing="20">
+                                    <Label text="Total Amount" styleClass="total-label"/>
+                                    <Label fx:id="singleTotalLabel" text="RM 0.00" styleClass="total-value"/>
+                                </HBox>
+                                
+                                <HBox spacing="12" alignment="CENTER_RIGHT">
+                                    <Button text="Generate Receipt" onAction="#handleGeneratePDF" styleClass="btn-primary-large"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+
+                        <!-- Bulk Generate Mode -->
+                        <VBox fx:id="modeBulk" spacing="20" styleClass="mode-content">
+                            
+                            <!-- Input Customer Data Card -->
+                            <VBox styleClass="card" spacing="16">
+                                <Label text="Input Customer Data" styleClass="card-title">
+                                    <font><Font name="System Bold" size="16"/></font>
+                                </Label>
+                                
+                                <HBox spacing="16" VBox.vgrow="ALWAYS">
+                                    <!-- Left: Names -->
+                                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                        <Label text="Names (one per line)" styleClass="input-label"/>
+                                        <TextArea fx:id="bulkNamesArea" styleClass="input-field" prefRowCount="8" wrapText="false" VBox.vgrow="ALWAYS"/>
+                                    </VBox>
+                                    
+                                    <!-- Right: IDs -->
+                                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                        <Label text="IDs (one per line)" styleClass="input-label"/>
+                                        <TextArea fx:id="bulkIdsArea" styleClass="input-field" prefRowCount="8" wrapText="false" VBox.vgrow="ALWAYS"/>
+                                    </VBox>
+                                </HBox>
+                                
+                                <HBox spacing="12" alignment="CENTER_RIGHT">
+                                    <Button text="Add to List" onAction="#handleAddBulkCustomers" styleClass="btn-primary"/>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Customer List Card -->
+                            <VBox styleClass="card" spacing="16" VBox.vgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label text="Customer List" styleClass="card-title">
+                                        <font><Font name="System Bold" size="16"/></font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="bulkCountLabel" text="0 customers" styleClass="text-muted"/>
+                                </HBox>
+                                
+                                <TableView fx:id="bulkTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="bulkNameColumn" text="Name" prefWidth="180"/>
+                                        <TableColumn fx:id="bulkIdColumn" text="ID" prefWidth="130"/>
+                                        <TableColumn fx:id="bulkEmailColumn" text="Email" prefWidth="180"/>
+                                        <TableColumn fx:id="bulkActionsColumn" text="Actions" prefWidth="160" minWidth="160" maxWidth="160" resizable="false"/>
+                                    </columns>
+                                </TableView>
+                                
+                                <HBox spacing="12" alignment="CENTER_LEFT">
+                                    <Button text="Clear All" onAction="#handleClearBulkList" styleClass="btn-secondary"/>
+                                    <Label text="(Or use Edit/Delete buttons in the table)" styleClass="text-muted"/>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Selected Items Card -->
+                            <VBox styleClass="card" spacing="16" VBox.vgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label text="Selected Items" styleClass="card-title">
+                                        <font><Font name="System Bold" size="16"/></font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="+ Add Item" styleClass="btn-add" onAction="#handleAddItemToInvoice"/>
+                                </HBox>
+                                
+                                <TableView fx:id="bulkItemsTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="bulkNameColumn2" text="Item" prefWidth="200"/>
+                                        <TableColumn fx:id="bulkQuantityColumn" text="Qty" prefWidth="80"/>
+                                        <TableColumn fx:id="bulkPriceColumn" text="Price" prefWidth="100"/>
+                                        <TableColumn fx:id="bulkTotalColumn" text="Total" prefWidth="120"/>
+                                    </columns>
+                                </TableView>
+                                
+                                <!-- Total Summary -->
+                                <HBox styleClass="total-summary" alignment="CENTER_RIGHT" spacing="20">
+                                    <Label text="Total Amount" styleClass="total-label"/>
+                                    <Label fx:id="bulkTotalLabel" text="RM 0.00" styleClass="total-value"/>
+                                </HBox>
+                                
+                                <HBox spacing="12" alignment="CENTER_RIGHT">
+                                    <Button text="Generate All Receipts" onAction="#handleBulkGenerate" styleClass="btn-primary-large"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </StackPane>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Page 2: Seller Info -->
+            <VBox fx:id="pageSellerInfo" spacing="0" styleClass="content-page">
+                
+                <!-- Page Header -->
+                <HBox styleClass="page-header" alignment="CENTER_LEFT">
+                    <Label text="Seller Information" styleClass="page-title">
+                        <font><Font name="System Bold" size="24"/></font>
+                    </Label>
+                </HBox>
+                
+                <ScrollPane fitToWidth="true" styleClass="content-scroll" VBox.vgrow="ALWAYS">
+                    <HBox spacing="20" styleClass="mode-content">
+                        
+                        <!-- Left Side: Organization Details Card (50% width) -->
+                        <VBox spacing="20" prefWidth="400" minWidth="350" maxWidth="450">
+                            <VBox styleClass="card" spacing="16">
+                                <Label text="Organization Details" styleClass="card-title">
+                                    <font><Font name="System Bold" size="16"/></font>
+                                </Label>
+                                
+                                <VBox spacing="12">
+                                    <VBox spacing="6">
+                                        <Label text="Organization Name" styleClass="input-label"/>
+                                        <TextField fx:id="sellerNameField" promptText="Southern University Student Society" styleClass="input-field"/>
+                                    </VBox>
+                                    
+                                    <VBox spacing="6">
+                                        <Label text="Email Address" styleClass="input-label"/>
+                                        <TextField fx:id="sellerEmailField" promptText="contact@suss.edu.my" styleClass="input-field"/>
+                                    </VBox>
+                                    
+                                    <VBox spacing="6">
+                                        <Label text="Organization Logo" styleClass="input-label"/>
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <Button text="Choose Logo" styleClass="btn-secondary" onAction="#handleChooseLogo"/>
+                                            <Label fx:id="logoFileLabel" text="No logo selected" styleClass="text-muted"/>
+                                        </HBox>
+                                        <VBox fx:id="logoPreviewBox" alignment="CENTER" spacing="6" style="-fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-background-color: #F9FAFB; -fx-background-radius: 8; -fx-padding: 10;" prefHeight="120" maxHeight="120">
+                                            <Label text="Logo Preview" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                                        </VBox>
+                                    </VBox>
+                                </VBox>
+                                
+                                <Separator/>
+                                
+                                <HBox spacing="12" alignment="CENTER_RIGHT">
+                                    <Button text="Cancel" styleClass="btn-secondary" onAction="#handleCancelSellerInfo"/>
+                                    <Button text="Save Changes" styleClass="btn-primary-large" onAction="#handleSaveSellerInfo"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                        
+                        <!-- Right Side: Receipt Preview Card (Larger) -->
+                        <VBox spacing="20" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="card" spacing="16">
+                                <Label text="Receipt Preview" styleClass="card-title">
+                                    <font><Font name="System Bold" size="16"/></font>
+                                </Label>
+                                
+                                <VBox fx:id="receiptPreviewBox" spacing="10" style="-fx-border-color: #E5E7EB; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 20;" prefHeight="550" alignment="TOP_CENTER">
+                                    <Label text="Preview will appear here after saving" styleClass="text-muted" textAlignment="CENTER" wrapText="true"/>
+                                </VBox>
+                            </VBox>
+                        </VBox>
+                        
+                    </HBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- Page 3: Sales Items -->
+            <VBox fx:id="pageSalesItems" spacing="0" styleClass="content-page">
+                
+                <!-- Page Header -->
+                <HBox styleClass="page-header" alignment="CENTER_LEFT" spacing="15">
+                    <Label text="Sales Items" styleClass="page-title">
+                        <font><Font name="System Bold" size="24"/></font>
+                    </Label>
+                </HBox>
+                
+                <ScrollPane fitToWidth="true" styleClass="content-scroll" VBox.vgrow="ALWAYS">
+                    <VBox spacing="20" styleClass="mode-content">
+                        
+                        <!-- Add Item Form (Collapsed by default) -->
+                        <VBox styleClass="card" spacing="16">
+                            <Label text="Add New Item" styleClass="card-title">
+                                <font><Font name="System Bold" size="16"/></font>
+                            </Label>
+                            
+                            <GridPane hgap="16" vgap="12">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="50"/>
+                                    <ColumnConstraints percentWidth="25"/>
+                                    <ColumnConstraints percentWidth="25"/>
+                                </columnConstraints>
+                                
+                                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <Label text="Product Name" styleClass="input-label"/>
+                                    <TextField fx:id="itemNameField" promptText="e.g. Student Handbook" styleClass="input-field"/>
+                                </VBox>
+                                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <Label text="Price (RM)" styleClass="input-label"/>
+                                    <TextField fx:id="itemPriceField" promptText="0.00" styleClass="input-field"/>
+                                </VBox>
+                                <VBox spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                    <Label text="Tax (%)" styleClass="input-label"/>
+                                    <TextField fx:id="itemTaxRateField" promptText="0" styleClass="input-field"/>
+                                </VBox>
+                            </GridPane>
+                            
+                            <HBox spacing="12" alignment="CENTER_RIGHT">
+                                <Button text="Clear" styleClass="btn-secondary"/>
+                                <Button text="Add Item" onAction="#handleAddItem" styleClass="btn-primary"/>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Items List Card -->
+                        <VBox styleClass="card" spacing="16" VBox.vgrow="ALWAYS">
+                            <Label text="All Items" styleClass="card-title">
+                                <font><Font name="System Bold" size="16"/></font>
+                            </Label>
+                            
+                            <VBox fx:id="savedItemsContainer" spacing="12" VBox.vgrow="ALWAYS">
+                                <!-- Dynamic items will be added here by controller -->
+                            </VBox>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
