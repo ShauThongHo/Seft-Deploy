@@ -7,13 +7,21 @@ import threading
 class YouTubeDownloader:
     def __init__(self, root):
         self.root = root
-        self.root.title("YouTube批量音乐下载器")
-        self.root.geometry("500x400")
+        self.root.title("YouTube批量下载器")
+        self.root.geometry("500x450")
         
         # URL输入框
         tk.Label(root, text="输入YouTube URL（每行一个）:").pack(pady=5)
         self.url_text = scrolledtext.ScrolledText(root, height=8, width=60)
         self.url_text.pack(pady=5)
+        
+        # 格式选择
+        tk.Label(root, text="选择下载格式:").pack(pady=5)
+        self.format_var = tk.StringVar(value="mp3")
+        format_frame = tk.Frame(root)
+        format_frame.pack(pady=5)
+        tk.Radiobutton(format_frame, text="MP3 (音频)", variable=self.format_var, value="mp3").pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(format_frame, text="MP4 (视频)", variable=self.format_var, value="mp4").pack(side=tk.LEFT, padx=10)
         
         # 下载路径
         tk.Label(root, text="下载路径:").pack(pady=5)
@@ -43,16 +51,27 @@ class YouTubeDownloader:
         self.log_text.config(state=tk.DISABLED)
         self.root.update()
     
-    def download_single(self, url, path):
-        ydl_opts = {
-            'format': 'bestaudio/best',  # 只下载最佳音频
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),  # 文件名格式
-        }
+    def download_single(self, url, path, format_type):
+        if format_type == "mp3":
+            ydl_opts = {
+                'format': 'bestaudio/best',  # 只下载最佳音频
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }],
+                'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),  # 文件名格式
+            }
+        else:  # mp4
+            ydl_opts = {
+                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',  # 下载最佳视频
+                'merge_output_format': 'mp4',  # 合并为mp4格式
+                'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),  # 文件名格式
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',
+                }],
+            }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
@@ -74,9 +93,11 @@ class YouTubeDownloader:
         threading.Thread(target=self._download_thread, args=(urls, path), daemon=True).start()
     
     def _download_thread(self, urls, path):
+        format_type = self.format_var.get()
+        self.log(f"下载格式: {format_type.upper()}")
         for i, url in enumerate(urls, 1):
             self.log(f"[{i}/{len(urls)}] 下载中: {url}")
-            result = self.download_single(url, path)
+            result = self.download_single(url, path, format_type)
             self.log(result)
         self.log("所有下载完成！")
 
